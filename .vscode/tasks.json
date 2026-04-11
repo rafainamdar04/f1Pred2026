@@ -1,0 +1,13 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Hourly FastF1 historical refresh",
+      "type": "shell",
+      "command": "d:/f1RacePred/.venv/Scripts/python.exe",
+      "args": ["scripts/hourly_fastf1_refresh.py"],
+      "isBackground": true,
+      "problemMatcher": []
+    }
+  ]
+}

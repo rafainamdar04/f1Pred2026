@@ -1,0 +1,29 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+.env
+.env.*
+.DS_Store
+Thumbs.db
+
+# Data outputs
+/data/
+/models/
+
+# Logs and databases
+*.log
+*.sqlite
+*.db
+
+# Node
+node_modules/
+
+# Build artifacts
+build/
+dist/

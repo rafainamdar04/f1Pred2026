@@ -1,0 +1,13 @@
+{
+  "name": "f1-2026-prediction",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "F1 2026 Race Prediction using Official F1 API SDK",
+  "main": "fetch_api_data.js",
+  "scripts": {
+    "fetch": "node fetch_api_data.js"
+  },
+  "dependencies": {
+    "@f1api/sdk": "^1.1.0"
+  }
+}

@@ -1,0 +1,67 @@
+drivers:
+  - driver_id: "verstappen"
+    constructor_id: "red_bull"
+    number: 1
+  - driver_id: "hadjar"
+    constructor_id: "red_bull"
+    number: 2
+  - driver_id: "leclerc"
+    constructor_id: "ferrari"
+    number: 16
+  - driver_id: "hamilton"
+    constructor_id: "ferrari"
+    number: 44
+  - driver_id: "antonelli"
+    constructor_id: "mercedes"
+    number: 12
+  - driver_id: "russell"
+    constructor_id: "mercedes"
+    number: 63
+  - driver_id: "ocon"
+    constructor_id: "haas"
+    number: 31
+  - driver_id: "bearman"
+    constructor_id: "haas"
+    number: 50
+  - driver_id: "hulkenberg"
+    constructor_id: "audi"
+    number: 27
+  - driver_id: "bortoletto"
+    constructor_id: "audi"
+    number: 5
+  - driver_id: "sainz"
+    constructor_id: "williams"
+    number: 55
+  - driver_id: "albon"
+    constructor_id: "williams"
+    number: 23
+  - driver_id: "bottas"
+    constructor_id: "cadillac"
+    number: 77
+  - driver_id: "perez"
+    constructor_id: "cadillac"
+    number: 11
+  - driver_id: "piastri"
+    constructor_id: "mclaren"
+    number: 81
+  - driver_id: "norris"
+    constructor_id: "mclaren"
+    number: 4
+  - driver_id: "stroll"
+    constructor_id: "aston_martin"
+    number: 18
+  - driver_id: "alonso"
+    constructor_id: "aston_martin"
+    number: 14
+  - driver_id: "gasly"
+    constructor_id: "alpine"
+    number: 10
+  - driver_id: "colapinto"
+    constructor_id: "alpine"
+    number: 43
+  - driver_id: "lawson"
+    constructor_id: "vcarb"
+    number: 30
+  - driver_id: "lindblad"
+    constructor_id: "vcarb"
+    number: 62

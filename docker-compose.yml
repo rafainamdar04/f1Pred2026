@@ -1,0 +1,18 @@
+version: "3.9"
+
+services:
+  api:
+    build: .
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./config:/app/config
+    ports:
+      - "8000:8000"
+    restart: always
+
+  # frontend:
+  #   image: node:20-alpine
+  #   working_dir: /app
+  #   ports:
+  #     - "3000:3000"
