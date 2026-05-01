@@ -175,12 +175,14 @@ def main() -> None:
     output["rationale"] = _rationale_from_features(target, PRE_QUALI_FEATURES, cur_model)
     output = output.sort_values("final_score", ascending=False).reset_index(drop=True)
 
+    output_clean = output.where(output.notna(), other=None)
     payload = {
         "round": int(args.round),
         "race_name": args.race_name,
         "mode": "prequali",
         "alpha": float(alpha),
-        "rows": output.to_dict(orient="records"),
+        "created_at": pd.Timestamp.now(tz="UTC").isoformat(),
+        "rows": output_clean.to_dict(orient="records"),
     }
 
     predictions_dir = PROJECT_ROOT / PATHS["predictions"]

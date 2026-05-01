@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -24,8 +25,9 @@ def _load_json(path: str) -> Any:
     except FileNotFoundError as exc:
         raise FileNotFoundError(f"JSON file not found: {file_path}") from exc
 
+    payload = re.sub(r'\bNaN\b', 'null', payload)
     try:
-        return json.loads(payload, parse_constant=_parse_json_constant)
+        return json.loads(payload)
     except json.JSONDecodeError as exc:
         raise ValueError(
             f"Invalid JSON in {file_path}: {exc.msg} (line {exc.lineno}, col {exc.colno})"
@@ -88,6 +90,7 @@ class RoundPredictions(BaseModel):
     race_name: str
     mode: str
     alpha: float
+    created_at: str | None = None
     rows: list[PredictionRow]
 
 
@@ -98,6 +101,7 @@ class PrequaliRoundPredictions(BaseModel):
     race_name: str
     mode: str
     alpha: float
+    created_at: str | None = None
     rows: list[PrequaliPredictionRow]
 
 
@@ -108,6 +112,7 @@ class PostqualiRoundPredictions(BaseModel):
     race_name: str
     mode: str
     alpha: float
+    created_at: str | None = None
     rows: list[PostqualiPredictionRow]
 
 

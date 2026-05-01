@@ -1,18 +1,21 @@
+# Python
 .venv/
 __pycache__/
+**/__pycache__/
 *.pyc
 *.pyo
 *.pyd
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
-.ipynb_checkpoints/
+
+# Env files — keep examples, ignore real secrets
 .env
 .env.*
-.DS_Store
-Thumbs.db
+!.env.example
+!frontend/.env.example
 
-# Data outputs
+# Data outputs (mounted as volumes in prod)
 /data/
 /models/
 
@@ -23,7 +26,19 @@ Thumbs.db
 
 # Node
 node_modules/
+frontend/node_modules/
 
 # Build artifacts
 build/
 dist/
+frontend/dist/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# AI tooling
+.claude/

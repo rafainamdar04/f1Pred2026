@@ -3,6 +3,9 @@ version: "3.9"
 services:
   api:
     build: .
+    environment:
+      - ADMIN_API_KEY=dev-key
+      - SCHEDULER_ENABLED=false
     volumes:
       - ./data:/app/data
       - ./models:/app/models

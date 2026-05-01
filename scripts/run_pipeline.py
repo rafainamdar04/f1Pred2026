@@ -73,9 +73,14 @@ def main() -> None:
         raise FileNotFoundError(f"Missing processed features: {processed_path}")
     processed_df = pd.read_csv(processed_path)
     rounds = _completed_rounds(processed_path)
+    predictions_dir = project_root / PATHS["predictions"]
 
     if args.mode in ("prequali", "both"):
         for round_num in rounds:
+            out_path = predictions_dir / f"round_{round_num}_prequali_predictions.json"
+            if out_path.exists():
+                print(f"[SKIP] prequali round {round_num} already predicted")
+                continue
             race_name = _round_race_name(processed_df, round_num)
             _run_step(
                 f"predict prequali round {round_num}",
@@ -92,6 +97,10 @@ def main() -> None:
     if args.mode in ("postquali", "both"):
         grid_file = args.grid_file
         for round_num in rounds:
+            out_path = predictions_dir / f"round_{round_num}_postquali_predictions.json"
+            if out_path.exists():
+                print(f"[SKIP] postquali round {round_num} already predicted")
+                continue
             race_name = _round_race_name(processed_df, round_num)
             if not grid_file:
                 temp_grid = project_root / "data" / "processed" / f"round_{round_num}_grid.csv"

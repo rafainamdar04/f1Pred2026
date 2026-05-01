@@ -49,27 +49,6 @@ class FastF1Scraper:
             print(f"[ERROR] Error fetching schedule: {e}")
             return None
     
-    def get_driver_standings(self, season=CURRENT_SEASON):
-        """Get current driver standings for season"""
-        try:
-            print(f"[STANDINGS] Fetching driver standings for {season}...")
-            # Use the last completed race to get standings
-            schedule = fastf1.get_event_schedule(season)
-            
-            standings_list = []
-            for idx, row in schedule.iterrows():
-                if pd.notna(row['Session3DateUtc']):  # Race has happened
-                    round_num = row['RoundNumber']
-                    gp_name = row['EventName']
-                else:
-                    continue  # Skip future races
-            
-            print(f"[OK] Loaded standings data")
-            return standings_list
-        except Exception as e:
-            print(f"[ERROR] Error fetching standings: {e}")
-            return []
-    
     def get_race_results(self, season=CURRENT_SEASON, round_num=1):
         """Get results for a specific race"""
         try:

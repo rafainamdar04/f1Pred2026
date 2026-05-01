@@ -243,12 +243,14 @@ def main() -> None:
 
     output["pace_vs_grid"] = output["driver_id"].map(lambda d: pre_rank.get(d, 0) - post_rank.get(d, 0))
 
+    output_clean = output.where(output.notna(), other=None)
     payload = {
         "round": int(args.round),
         "race_name": args.race_name,
         "mode": "postquali",
         "alpha": float(alpha),
-        "rows": output.to_dict(orient="records"),
+        "created_at": pd.Timestamp.now(tz="UTC").isoformat(),
+        "rows": output_clean.to_dict(orient="records"),
     }
 
     predictions_dir = PROJECT_ROOT / PATHS["predictions"]
