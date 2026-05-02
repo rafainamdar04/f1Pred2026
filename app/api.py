@@ -13,10 +13,12 @@ import threading
 from fastapi import BackgroundTasks, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.database import (
     PredictionLog,
     SessionLocal,
+    get_latest_job_runs,
     log_pipeline_finish,
     log_pipeline_start,
     update_pipeline_pid,
@@ -47,12 +49,15 @@ API_KEY_HEADER = "X-API-Key"
 
 PUBLIC_API_PATHS = {
     "/api/calendar",
+    "/api/calendar/sprints",
     "/api/metrics",
     "/api/race-results",
     "/api/status",
     "/api/standings",
     "/api/standings/drivers",
     "/api/standings/constructors",
+    "/api/standings/drivers/sprints",
+    "/api/standings/constructors/sprints",
 }
 PUBLIC_API_PREFIXES = (
     "/api/predictions",
@@ -62,6 +67,7 @@ ADMIN_ONLY_PATHS: set[str] = set()  # /health and /ready are public for infra us
 ADMIN_TRIGGERABLE_JOBS = {
     "run_prequali",
     "ingest_quali",
+    "ingest_sprint",
     "run_postquali",
     "ingest_results",
     "score_predictions",
@@ -95,30 +101,39 @@ _SHORT_CODE_MAP = {
     "Abu Dhabi Grand Prix": "UAE",
 }
 
+_SPRINT_VENUES = {
+    "Chinese Grand Prix",
+    "Miami Grand Prix",
+    "Canadian Grand Prix",
+    "British Grand Prix",
+    "Dutch Grand Prix",
+    "Singapore Grand Prix",
+}
+
 _FALLBACK_CALENDAR = [
-    {"round": 1, "name": "Australian Grand Prix", "short": "AUS", "date": None},
-    {"round": 2, "name": "Chinese Grand Prix", "short": "CHN", "date": None},
-    {"round": 3, "name": "Bahrain Grand Prix", "short": "BHR", "date": None},
-    {"round": 4, "name": "Japanese Grand Prix", "short": "JPN", "date": None},
-    {"round": 5, "name": "Saudi Arabian Grand Prix", "short": "KSA", "date": None},
-    {"round": 6, "name": "Miami Grand Prix", "short": "MIA", "date": None},
-    {"round": 7, "name": "Monaco Grand Prix", "short": "MON", "date": None},
-    {"round": 8, "name": "Canadian Grand Prix", "short": "CAN", "date": None},
-    {"round": 9, "name": "Spanish Grand Prix", "short": "ESP", "date": None},
-    {"round": 10, "name": "Austrian Grand Prix", "short": "AUT", "date": None},
-    {"round": 11, "name": "British Grand Prix", "short": "GBR", "date": None},
-    {"round": 12, "name": "Belgian Grand Prix", "short": "BEL", "date": None},
-    {"round": 13, "name": "Hungarian Grand Prix", "short": "HUN", "date": None},
-    {"round": 14, "name": "Dutch Grand Prix", "short": "NED", "date": None},
-    {"round": 15, "name": "Italian Grand Prix", "short": "ITA", "date": None},
-    {"round": 16, "name": "Azerbaijan Grand Prix", "short": "AZE", "date": None},
-    {"round": 17, "name": "Singapore Grand Prix", "short": "SGP", "date": None},
-    {"round": 18, "name": "United States Grand Prix", "short": "USA", "date": None},
-    {"round": 19, "name": "Mexico City Grand Prix", "short": "MEX", "date": None},
-    {"round": 20, "name": "Sao Paulo Grand Prix", "short": "BRA", "date": None},
-    {"round": 21, "name": "Las Vegas Grand Prix", "short": "LVS", "date": None},
-    {"round": 22, "name": "Qatar Grand Prix", "short": "QAT", "date": None},
-    {"round": 23, "name": "Abu Dhabi Grand Prix", "short": "UAE", "date": None},
+    {"round": 1, "name": "Australian Grand Prix", "short": "AUS", "date": None, "is_sprint": False, "sprint_start_utc": None, "sprint_end_utc": None},
+    {"round": 2, "name": "Chinese Grand Prix", "short": "CHN", "date": None, "is_sprint": True, "sprint_start_utc": None, "sprint_end_utc": None},
+    {"round": 3, "name": "Bahrain Grand Prix", "short": "BHR", "date": None, "is_sprint": False, "sprint_start_utc": None, "sprint_end_utc": None},
+    {"round": 4, "name": "Japanese Grand Prix", "short": "JPN", "date": None, "is_sprint": False, "sprint_start_utc": None, "sprint_end_utc": None},
+    {"round": 5, "name": "Saudi Arabian Grand Prix", "short": "KSA", "date": None, "is_sprint": False, "sprint_start_utc": None, "sprint_end_utc": None},
+    {"round": 6, "name": "Miami Grand Prix", "short": "MIA", "date": None, "is_sprint": True, "sprint_start_utc": None, "sprint_end_utc": None},
+    {"round": 7, "name": "Monaco Grand Prix", "short": "MON", "date": None, "is_sprint": False, "sprint_start_utc": None, "sprint_end_utc": None},
+    {"round": 8, "name": "Canadian Grand Prix", "short": "CAN", "date": None, "is_sprint": True, "sprint_start_utc": None, "sprint_end_utc": None},
+    {"round": 9, "name": "Spanish Grand Prix", "short": "ESP", "date": None, "is_sprint": False, "sprint_start_utc": None, "sprint_end_utc": None},
+    {"round": 10, "name": "Austrian Grand Prix", "short": "AUT", "date": None, "is_sprint": False, "sprint_start_utc": None, "sprint_end_utc": None},
+    {"round": 11, "name": "British Grand Prix", "short": "GBR", "date": None, "is_sprint": True, "sprint_start_utc": None, "sprint_end_utc": None},
+    {"round": 12, "name": "Belgian Grand Prix", "short": "BEL", "date": None, "is_sprint": False, "sprint_start_utc": None, "sprint_end_utc": None},
+    {"round": 13, "name": "Hungarian Grand Prix", "short": "HUN", "date": None, "is_sprint": False, "sprint_start_utc": None, "sprint_end_utc": None},
+    {"round": 14, "name": "Dutch Grand Prix", "short": "NED", "date": None, "is_sprint": True, "sprint_start_utc": None, "sprint_end_utc": None},
+    {"round": 15, "name": "Italian Grand Prix", "short": "ITA", "date": None, "is_sprint": False, "sprint_start_utc": None, "sprint_end_utc": None},
+    {"round": 16, "name": "Azerbaijan Grand Prix", "short": "AZE", "date": None, "is_sprint": False, "sprint_start_utc": None, "sprint_end_utc": None},
+    {"round": 17, "name": "Singapore Grand Prix", "short": "SGP", "date": None, "is_sprint": True, "sprint_start_utc": None, "sprint_end_utc": None},
+    {"round": 18, "name": "United States Grand Prix", "short": "USA", "date": None, "is_sprint": False, "sprint_start_utc": None, "sprint_end_utc": None},
+    {"round": 19, "name": "Mexico City Grand Prix", "short": "MEX", "date": None, "is_sprint": False, "sprint_start_utc": None, "sprint_end_utc": None},
+    {"round": 20, "name": "Sao Paulo Grand Prix", "short": "BRA", "date": None, "is_sprint": False, "sprint_start_utc": None, "sprint_end_utc": None},
+    {"round": 21, "name": "Las Vegas Grand Prix", "short": "LVS", "date": None, "is_sprint": False, "sprint_start_utc": None, "sprint_end_utc": None},
+    {"round": 22, "name": "Qatar Grand Prix", "short": "QAT", "date": None, "is_sprint": False, "sprint_start_utc": None, "sprint_end_utc": None},
+    {"round": 23, "name": "Abu Dhabi Grand Prix", "short": "UAE", "date": None, "is_sprint": False, "sprint_start_utc": None, "sprint_end_utc": None},
 ]
 
 app.add_middleware(
@@ -314,12 +329,23 @@ def _fetch_calendar_fastf1() -> list[dict] | None:
         if race_start:
             race_end = (pd.to_datetime(race_start) + pd.Timedelta(hours=2)).isoformat()
 
+        event_format = str(row.get("EventFormat", "conventional")).lower()
+        is_sprint = event_format in ("sprint_shootout", "sprint")
+        sprint_start = None
+        sprint_end = None
+        if is_sprint and "Session3DateUtc" in row and pd.notna(row["Session3DateUtc"]):
+            sprint_start = pd.to_datetime(row["Session3DateUtc"], utc=True).isoformat()
+            sprint_end = (pd.to_datetime(sprint_start) + pd.Timedelta(hours=1)).isoformat()
+
         name = str(event_name)
         race = {
             "round": int(round_num),
             "name": name,
             "short": _short_code_for_event(name),
             "date": date,
+            "is_sprint": is_sprint,
+            "sprint_start_utc": sprint_start,
+            "sprint_end_utc": sprint_end,
             "quali_start_utc": quali_start,
             "quali_end_utc": quali_end,
             "race_start_utc": race_start,
@@ -334,6 +360,11 @@ def _fetch_calendar_fastf1() -> list[dict] | None:
 
 def _get_calendar() -> list[dict]:
     cached = _load_calendar_cache()
+    if cached:
+        # Bust stale cache that predates sprint field support
+        if cached and "is_sprint" not in cached[0]:
+            cached = None
+            _calendar_cache_path().unlink(missing_ok=True)
     if cached:
         filtered = [race for race in cached if int(race.get("round", 0)) > 0]
         if len(filtered) != len(cached):
@@ -462,72 +493,7 @@ def ready() -> dict:
         return {"status": "ready", "metrics": True, "predictions": True}
 
 
-@app.get("/", response_class=HTMLResponse)
-def landing_page() -> str:
-        return """
-<!doctype html>
-<html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>F1 Race Predictions API</title>
-        <style>
-            body {
-                font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", sans-serif;
-                margin: 0;
-                padding: 40px;
-                background: radial-gradient(circle at top, #f2f2f2, #e6eef5);
-                color: #1b2430;
-            }
-            .card {
-                max-width: 720px;
-                margin: 0 auto;
-                background: #ffffff;
-                border-radius: 16px;
-                padding: 28px 32px;
-                box-shadow: 0 20px 40px rgba(26, 36, 56, 0.12);
-            }
-            h1 {
-                margin-top: 0;
-                font-size: 32px;
-            }
-            p {
-                line-height: 1.6;
-            }
-            code {
-                background: #f3f6fb;
-                padding: 2px 6px;
-                border-radius: 6px;
-            }
-            ul {
-                padding-left: 18px;
-            }
-            a {
-                color: #2b5fb2;
-                text-decoration: none;
-            }
-            a:hover {
-                text-decoration: underline;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="card">
-            <h1>F1 Race Predictions API</h1>
-            <p>Portfolio API for pre- and post-qualifying race outcome predictions.</p>
-            <p>Public endpoints include <code>/api/metrics</code> and <code>/api/predictions</code>.</p>
-            <p>Admin endpoints (health, refresh) require <code>X-API-Key</code>.</p>
-            <h3>Quick Links</h3>
-            <ul>
-                <li><a href="/health">/health</a></li>
-                <li><a href="/ready">/ready</a></li>
-                <li><a href="/api/metrics">/api/metrics</a></li>
-                <li><a href="/api/predictions/next/postquali">/api/predictions/next/postquali</a></li>
-            </ul>
-        </div>
-    </body>
-</html>
-"""
+# Landing page will be served from frontend/dist via SPA routing below
 
 
 @app.get("/api/metrics")
@@ -542,6 +508,18 @@ def get_calendar() -> dict:
     return {
         "season": CURRENT_SEASON,
         "races": _get_calendar(),
+    }
+
+
+@app.get("/api/calendar/sprints")
+def get_sprint_calendar() -> dict:
+    """Get only sprint races from the calendar."""
+    all_races = _get_calendar()
+    sprint_races = [race for race in all_races if race.get("is_sprint", False)]
+    return {
+        "season": CURRENT_SEASON,
+        "sprint_races": sprint_races,
+        "total_sprints": len(sprint_races),
     }
 
 
@@ -623,12 +601,18 @@ def get_status() -> dict:
     predictions_dir = Path(PATHS["predictions"])
     rounds_completed = len(list(predictions_dir.glob("round_*_postquali_predictions.json"))) if predictions_dir.exists() else 0
 
+    try:
+        jobs = get_latest_job_runs()
+    except Exception:
+        jobs = {}
+
     return {
         "status": status_payload.get("status", "idle"),
         "last_pipeline_run": last_pipeline_run,
         "next_scheduled": get_next_scheduled_event() or _next_sunday_utc(),
         "rounds_completed": rounds_completed,
         "model_version": _newest_model_timestamp(),
+        "jobs": jobs,
     }
 
 
@@ -643,6 +627,11 @@ def _standings_from_results() -> tuple[list[dict], list[dict]]:
     df = pd.read_csv(results_file)
     df["finish_position"] = pd.to_numeric(df["finish_position"], errors="coerce")
     df["points"] = pd.to_numeric(df["points"], errors="coerce").fillna(0.0)
+    if "session_type" not in df.columns:
+        df["session_type"] = "R"
+
+    # Wins and podiums count only main race finishes, not sprint races
+    race_df = df[df["session_type"] == "R"]
 
     # ── Driver standings ──────────────────────────────────────────────────────
     driver_meta = (
@@ -653,20 +642,27 @@ def _standings_from_results() -> tuple[list[dict], list[dict]]:
     )
 
     driver_pts = df.groupby("driver_id")["points"].sum().reset_index(name="points")
+    sprint_df = df[df["session_type"] == "S"]
+    driver_sprint_pts = sprint_df.groupby("driver_id")["points"].sum().reset_index(name="sprint_points")
+    driver_race_pts = race_df.groupby("driver_id")["points"].sum().reset_index(name="race_points")
     driver_wins = (
-        df[df["finish_position"] == 1.0].groupby("driver_id").size().reset_index(name="wins")
+        race_df[race_df["finish_position"] == 1.0].groupby("driver_id").size().reset_index(name="wins")
     )
     driver_podiums = (
-        df[df["finish_position"] <= 3.0].groupby("driver_id").size().reset_index(name="podiums")
+        race_df[race_df["finish_position"] <= 3.0].groupby("driver_id").size().reset_index(name="podiums")
     )
 
     drv = (
         driver_meta
         .merge(driver_pts, on="driver_id", how="left")
+        .merge(driver_sprint_pts, on="driver_id", how="left")
+        .merge(driver_race_pts, on="driver_id", how="left")
         .merge(driver_wins, on="driver_id", how="left")
         .merge(driver_podiums, on="driver_id", how="left")
     )
     drv["points"] = drv["points"].fillna(0.0)
+    drv["sprint_points"] = drv["sprint_points"].fillna(0.0)
+    drv["race_points"] = drv["race_points"].fillna(0.0)
     drv["wins"] = drv["wins"].fillna(0).astype(int)
     drv["podiums"] = drv["podiums"].fillna(0).astype(int)
     drv = drv.sort_values("points", ascending=False).reset_index(drop=True)
@@ -682,18 +678,29 @@ def _standings_from_results() -> tuple[list[dict], list[dict]]:
             "constructor_id": str(row["constructor_id"]).lower() if pd.notna(row["constructor_id"]) else "",
             "constructor_name": str(row["constructor_name"]) if pd.notna(row["constructor_name"]) else "",
             "points": float(row["points"]),
+            "sprint_points": float(row["sprint_points"]),
+            "race_points": float(row["race_points"]),
             "wins": int(row["wins"]),
             "podiums": int(row["podiums"]),
         })
 
     # ── Constructor standings ─────────────────────────────────────────────────
     con_pts = df.groupby(["constructor_id", "constructor_name"])["points"].sum().reset_index(name="points")
+    con_sprint_pts = sprint_df.groupby("constructor_id")["points"].sum().reset_index(name="sprint_points")
+    con_race_pts = race_df.groupby("constructor_id")["points"].sum().reset_index(name="race_points")
     con_wins = (
-        df[df["finish_position"] == 1.0]
+        race_df[race_df["finish_position"] == 1.0]
         .groupby("constructor_id").size().reset_index(name="wins")
     )
 
-    con = con_pts.merge(con_wins, on="constructor_id", how="left")
+    con = (
+        con_pts
+        .merge(con_sprint_pts, on="constructor_id", how="left")
+        .merge(con_race_pts, on="constructor_id", how="left")
+        .merge(con_wins, on="constructor_id", how="left")
+    )
+    con["sprint_points"] = con["sprint_points"].fillna(0.0)
+    con["race_points"] = con["race_points"].fillna(0.0)
     con["wins"] = con["wins"].fillna(0).astype(int)
     con = con.sort_values("points", ascending=False).reset_index(drop=True)
     con["position"] = con.index + 1
@@ -705,6 +712,8 @@ def _standings_from_results() -> tuple[list[dict], list[dict]]:
             "constructor_id": str(row["constructor_id"]).lower() if pd.notna(row["constructor_id"]) else "",
             "constructor_name": str(row["constructor_name"]) if pd.notna(row["constructor_name"]) else "",
             "points": float(row["points"]),
+            "sprint_points": float(row["sprint_points"]),
+            "race_points": float(row["race_points"]),
             "wins": int(row["wins"]),
         })
 
@@ -741,6 +750,134 @@ def get_constructor_standings() -> dict:
         raise HTTPException(status_code=500, detail=f"Failed to compute constructor standings: {exc}")
 
 
+@app.get("/api/standings/drivers/sprints")
+def get_sprint_driver_standings() -> dict:
+    """Get driver standings based on sprint results only."""
+    try:
+        import pandas as pd
+
+        results_file = Path(PATHS["data"]) / f"{CURRENT_SEASON}_race_results.csv"
+        if not results_file.exists():
+            raise FileNotFoundError(f"Race results file not found: {results_file}")
+
+        df = pd.read_csv(results_file)
+        df["points"] = pd.to_numeric(df["points"], errors="coerce").fillna(0.0)
+        if "session_type" not in df.columns:
+            df["session_type"] = "R"
+
+        # Filter for sprint races only
+        sprint_df = df[df["session_type"] == "S"]
+        if sprint_df.empty:
+            return {
+                "drivers": [],
+                "season": CURRENT_SEASON,
+                "message": "No sprint races completed yet",
+                "last_updated": datetime.now(timezone.utc).isoformat(),
+            }
+
+        driver_meta = (
+            sprint_df.sort_values("round", ascending=False)
+            .groupby("driver_id")
+            .first()
+            .reset_index()[["driver_id", "driver_name", "driver_number", "constructor_id", "constructor_name"]]
+        )
+
+        driver_pts = sprint_df.groupby("driver_id")["points"].sum().reset_index(name="points")
+        driver_wins = (
+            sprint_df[sprint_df["finish_position"] == 1.0].groupby("driver_id").size().reset_index(name="wins")
+        )
+
+        drv = (
+            driver_meta
+            .merge(driver_pts, on="driver_id", how="left")
+            .merge(driver_wins, on="driver_id", how="left")
+        )
+        drv["points"] = drv["points"].fillna(0.0)
+        drv["wins"] = drv["wins"].fillna(0).astype(int)
+        drv = drv.sort_values("points", ascending=False).reset_index(drop=True)
+        drv["position"] = drv.index + 1
+
+        drivers = []
+        for _, row in drv.iterrows():
+            drivers.append({
+                "position": int(row["position"]),
+                "driver_id": str(row["driver_id"]).lower(),
+                "driver_name": str(row["driver_name"]) if pd.notna(row["driver_name"]) else "",
+                "driver_number": int(row["driver_number"]) if pd.notna(row.get("driver_number")) else None,
+                "constructor_id": str(row["constructor_id"]).lower() if pd.notna(row["constructor_id"]) else "",
+                "constructor_name": str(row["constructor_name"]) if pd.notna(row["constructor_name"]) else "",
+                "points": float(row["points"]),
+                "wins": int(row["wins"]),
+            })
+
+        return {
+            "drivers": drivers,
+            "season": CURRENT_SEASON,
+            "last_updated": datetime.now(timezone.utc).isoformat(),
+        }
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Failed to compute sprint driver standings: {exc}")
+
+
+@app.get("/api/standings/constructors/sprints")
+def get_sprint_constructor_standings() -> dict:
+    """Get constructor standings based on sprint results only."""
+    try:
+        import pandas as pd
+
+        results_file = Path(PATHS["data"]) / f"{CURRENT_SEASON}_race_results.csv"
+        if not results_file.exists():
+            raise FileNotFoundError(f"Race results file not found: {results_file}")
+
+        df = pd.read_csv(results_file)
+        df["points"] = pd.to_numeric(df["points"], errors="coerce").fillna(0.0)
+        if "session_type" not in df.columns:
+            df["session_type"] = "R"
+
+        # Filter for sprint races only
+        sprint_df = df[df["session_type"] == "S"]
+        if sprint_df.empty:
+            return {
+                "constructors": [],
+                "season": CURRENT_SEASON,
+                "message": "No sprint races completed yet",
+                "last_updated": datetime.now(timezone.utc).isoformat(),
+            }
+
+        con_pts = sprint_df.groupby(["constructor_id", "constructor_name"])["points"].sum().reset_index(name="points")
+        con_wins = (
+            sprint_df[sprint_df["finish_position"] == 1.0]
+            .groupby("constructor_id").size().reset_index(name="wins")
+        )
+
+        con = con_pts.merge(con_wins, on="constructor_id", how="left")
+        con["wins"] = con["wins"].fillna(0).astype(int)
+        con = con.sort_values("points", ascending=False).reset_index(drop=True)
+        con["position"] = con.index + 1
+
+        constructors = []
+        for _, row in con.iterrows():
+            constructors.append({
+                "position": int(row["position"]),
+                "constructor_id": str(row["constructor_id"]).lower() if pd.notna(row["constructor_id"]) else "",
+                "constructor_name": str(row["constructor_name"]) if pd.notna(row["constructor_name"]) else "",
+                "points": float(row["points"]),
+                "wins": int(row["wins"]),
+            })
+
+        return {
+            "constructors": constructors,
+            "season": CURRENT_SEASON,
+            "last_updated": datetime.now(timezone.utc).isoformat(),
+        }
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Failed to compute sprint constructor standings: {exc}")
+
+
 @app.get("/api/race-results")
 def get_race_results() -> dict:
     """Fetch race results for the current season"""
@@ -752,22 +889,32 @@ def get_race_results() -> dict:
             raise HTTPException(status_code=404, detail="Race results file not found")
         
         df = pd.read_csv(results_file)
-        
-        # Group by round to get unique races
+        if "session_type" not in df.columns:
+            df["session_type"] = "R"
+
+        result_cols = ['driver_name', 'constructor_name', 'finish_position', 'points']
+
+        # Group by round — each round may have a main race row and a sprint row
         races = []
         for round_num in sorted(df['round'].unique()):
             round_data = df[df['round'] == round_num]
             race_name = round_data['race_name'].iloc[0]
-            
-            # Get top 10 finishers
-            top_10 = round_data.nsmallest(10, 'finish_position')[['driver_name', 'constructor_name', 'finish_position', 'points']].to_dict('records')
-            winners = round_data[round_data['finish_position'] == 1.0]
+
+            race_rows = round_data[round_data['session_type'] == 'R']
+            sprint_rows = round_data[round_data['session_type'] == 'S']
+
+            top_10 = race_rows.nsmallest(10, 'finish_position')[result_cols].to_dict('records') if not race_rows.empty else []
+            winners = race_rows[race_rows['finish_position'] == 1.0]
+
+            sprint_top_8 = sprint_rows.nsmallest(8, 'finish_position')[result_cols].to_dict('records') if not sprint_rows.empty else []
 
             races.append({
                 "round": int(round_num),
                 "name": race_name,
                 "winner": winners.iloc[0]['driver_name'] if not winners.empty else None,
                 "podium": top_10,
+                "sprint_podium": sprint_top_8,
+                "is_sprint": len(sprint_rows) > 0,
                 "status": "completed",
             })
         
@@ -867,6 +1014,7 @@ async def refresh_pipeline_force() -> dict:
 
 
 @app.post("/api/admin/trigger/{job_name}")
+@app.post("/api/admin/trigger-job/{job_name}")
 async def trigger_admin_job(job_name: str, round: int | None = None, race_name: str | None = None) -> dict:
     if job_name not in ADMIN_TRIGGERABLE_JOBS:
         raise HTTPException(status_code=404, detail=f"Unknown job '{job_name}'")
@@ -913,3 +1061,100 @@ def get_predictions_history() -> list:
             return predictions
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch prediction history: {str(e)}")
+
+
+# ════════════════════════════════════════════════════════════════════════════════════
+# SPA ROUTING - Serve React frontend from dist/
+# Mount static files and setup SPA fallback to index.html
+# Must be LAST to avoid shadowing API routes
+# ════════════════════════════════════════════════════════════════════════════════════
+
+FRONTEND_BUILD_DIR = Path(__file__).resolve().parents[1] / "frontend" / "dist"
+
+if FRONTEND_BUILD_DIR.exists() and (FRONTEND_BUILD_DIR / "index.html").exists():
+    # Serve static assets with long-lived cache
+    app.mount(
+        "/assets",
+        StaticFiles(directory=str(FRONTEND_BUILD_DIR / "assets"), html=False),
+        name="assets"
+    )
+    
+    # Catch-all route for SPA: any non-API request returns index.html
+    @app.get("/{full_path:path}", response_class=HTMLResponse)
+    async def catch_all_spa(full_path: str):
+        # Don't serve index.html for static files or known non-SPA paths
+        if full_path.startswith("assets/") or full_path in ("favicon.svg", "favicon.ico", "icons.svg"):
+            # Let StaticFiles handle these
+            raise HTTPException(status_code=404)
+        # Serve index.html for all other paths (SPA routing)
+        index_path = FRONTEND_BUILD_DIR / "index.html"
+        return index_path.read_text()
+else:
+    # Fallback if dist doesn't exist
+    @app.get("/", response_class=HTMLResponse)
+    def landing_page_fallback() -> str:
+        return """
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>F1 Race Predictions API</title>
+        <style>
+            body {
+                font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+                margin: 0;
+                padding: 40px;
+                background: radial-gradient(circle at top, #f2f2f2, #e6eef5);
+                color: #1b2430;
+            }
+            .card {
+                max-width: 720px;
+                margin: 0 auto;
+                background: #ffffff;
+                border-radius: 16px;
+                padding: 28px 32px;
+                box-shadow: 0 20px 40px rgba(26, 36, 56, 0.12);
+            }
+            h1 {
+                margin-top: 0;
+                font-size: 32px;
+            }
+            p {
+                line-height: 1.6;
+            }
+            code {
+                background: #f3f6fb;
+                padding: 2px 6px;
+                border-radius: 6px;
+            }
+            ul {
+                padding-left: 18px;
+            }
+            a {
+                color: #2b5fb2;
+                text-decoration: none;
+            }
+            a:hover {
+                text-decoration: underline;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="card">
+            <h1>F1 Race Predictions API</h1>
+            <p><strong>⚠️ Frontend build not found</strong></p>
+            <p>Build the frontend first by running:</p>
+            <code>cd frontend && npm run build</code>
+            <h3>API Links (backend only)</h3>
+            <ul>
+                <li><a href="/health">/health</a></li>
+                <li><a href="/ready">/ready</a></li>
+                <li><a href="/api/calendar">/api/calendar</a></li>
+                <li><a href="/api/metrics">/api/metrics</a></li>
+                <li><a href="/api/predictions/next">/api/predictions/next</a></li>
+            </ul>
+        </div>
+    </body>
+</html>
+"""

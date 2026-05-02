@@ -286,7 +286,14 @@ def main() -> None:
         raise FileNotFoundError(f"Missing {CURRENT_SEASON} race results at {current_path}")
 
     historical = pd.read_csv(historical_path)
+    # Predictions are race-only; sprint rows excluded.
+    if "session_type" in historical.columns:
+        historical = historical[historical["session_type"] == "R"].copy()
+
     current = pd.read_csv(current_path)
+    # Predictions are race-only; sprint rows excluded.
+    if "session_type" in current.columns:
+        current = current[current["session_type"] == "R"].copy()
 
     qualifying_path = data_dir / f"{CURRENT_SEASON}_qualifying.csv"
     if qualifying_path.exists():

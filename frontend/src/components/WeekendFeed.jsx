@@ -9,47 +9,49 @@ export function WeekendFeed({ round, onNavigate = null }) {
   }
 
   const race = calendar.races?.find((r) => r.round === round);
-  const raceDate = race?.date ? new Date(race.date) : null;
+  const isSprint = race?.is_sprint === true;
 
-  // Simple step indicators for the weekend
-  const steps = [
-    { day: 'Thursday', label: 'Pre-Quali Predictions', icon: '📊' },
-    { day: 'Saturday', label: 'Qualifying happens', icon: '🏁' },
-    { day: 'Saturday', label: 'Post-Quali Update', icon: '📈' },
-    { day: 'Sunday', label: 'Race + Results', icon: '🏆' },
+  const baseSteps = [
+    { day: 'Thursday', label: 'Pre-Quali Predictions', icon: '📊', clickable: true },
+    ...(isSprint ? [{ day: 'Saturday', label: 'Sprint Race', icon: '⚡', clickable: false, sprint: true }] : []),
+    { day: 'Saturday', label: 'Qualifying', icon: '🏁', clickable: false },
+    { day: 'Saturday', label: 'Post-Quali Update', icon: '📈', clickable: true },
+    { day: 'Sunday', label: 'Race + Results', icon: '🏆', clickable: false },
   ];
 
-  const now = new Date();
-  const isCompleted = (idx) => {
-    // Placeholder logic - in real app, check against pipeline status timestamps
-    return idx === 0; // First step always "done" for demo
-  };
-
-  const isInProgress = (idx) => {
-    return idx === 1; // Second step in progress
-  };
+  const isCompleted = (idx) => idx === 0;
+  const isInProgress = (idx) => idx === (isSprint ? 2 : 1);
 
   return (
     <div className="space-y-3">
-      <div className="text-xs font-bold text-[#777777] uppercase tracking-wider">Weekend Timeline</div>
+      <div className="flex items-center gap-2">
+        <div className="text-xs font-bold text-[#777777] uppercase tracking-wider">Weekend Timeline</div>
+        {isSprint && (
+          <span
+            className="text-[9px] font-semibold px-2 py-0.5 rounded uppercase tracking-wider"
+            style={{ background: 'rgba(245,158,11,.12)', color: '#F59E0B', border: '1px solid rgba(245,158,11,.35)' }}
+          >
+            Sprint
+          </span>
+        )}
+      </div>
       <div className="space-y-2">
-        {steps.map((step, idx) => {
+        {baseSteps.map((step, idx) => {
           const done = isCompleted(idx);
           const inProgress = isInProgress(idx);
-          const isClickable = idx === 0 || idx === 2;
+          const borderColor = step.sprint ? 'border-[rgba(245,158,11,0.25)]' : 'border-[rgba(255,255,255,0.07)]';
+          const hoverBorder = step.clickable ? 'hover:border-[rgba(255,255,255,0.14)]' : '';
 
           return (
             <div
               key={idx}
-              className={`flex items-center gap-3 px-4 py-3 bg-[#111111] border border-[rgba(255,255,255,0.07)] rounded transition ${
-                isClickable ? 'cursor-pointer hover:border-[rgba(255,255,255,0.14)]' : ''
+              className={`flex items-center gap-3 px-4 py-3 bg-[#111111] border ${borderColor} rounded transition ${
+                step.clickable ? `cursor-pointer ${hoverBorder}` : ''
               }`}
               onClick={() => {
-                if (isClickable && onNavigate) {
-                  onNavigate(round);
-                }
+                if (step.clickable && onNavigate) onNavigate(round);
               }}
-              role={isClickable ? 'button' : undefined}
+              role={step.clickable ? 'button' : undefined}
             >
               {/* Circle indicator */}
               <div className="relative w-6 h-6 flex-shrink-0">
@@ -58,8 +60,9 @@ export function WeekendFeed({ round, onNavigate = null }) {
                 ) : (
                   <div
                     className={`w-full h-full rounded-full flex items-center justify-center ${
-                      done ? 'bg-[#27F4D2]' : 'border-2 border-[#777777]'
+                      done ? 'bg-[#27F4D2]' : step.sprint ? '' : 'border-2 border-[#777777]'
                     }`}
+                    style={step.sprint && !done ? { border: '2px solid #F59E0B' } : undefined}
                   >
                     {done && <div className="text-white text-sm">✓</div>}
                   </div>
@@ -68,13 +71,12 @@ export function WeekendFeed({ round, onNavigate = null }) {
 
               {/* Content */}
               <div className="flex-1">
-                <div className="text-xs text-[#777777]">{step.day}</div>
+                <div className="text-xs" style={{ color: step.sprint ? '#F59E0B' : '#777777' }}>{step.day}</div>
                 <div className="text-sm font-medium text-white">
                   {step.icon} {step.label}
                 </div>
               </div>
 
-              {/* Badge */}
               {done && <div className="text-xs bg-[#27F4D2] text-black px-2 py-1 rounded font-semibold">NEW</div>}
             </div>
           );

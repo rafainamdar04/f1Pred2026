@@ -31,6 +31,7 @@ export function WDCStandings() {
         const teamColor = TEAM_COLORS[driver.constructor_name] || '#777777';
         const fillPercent = (driver.points / maxPoints) * 100;
         const isLeader = idx === 0;
+        const hasSprint = (driver.sprint_points || 0) > 0;
 
         return (
           <div key={driver.driver_id} className="relative">
@@ -55,6 +56,11 @@ export function WDCStandings() {
               <div className="text-right">
                 <div className="text-xl font-black text-white font-barlow">{driver.points}</div>
                 <div className="text-xs text-[#777777]">pts</div>
+                {hasSprint && (
+                  <div className="text-[10px] font-mono mt-0.5" style={{ color: '#F59E0B' }}>
+                    {driver.sprint_points} sprint
+                  </div>
+                )}
               </div>
             </div>
           </div>

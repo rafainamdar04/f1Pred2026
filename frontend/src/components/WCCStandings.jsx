@@ -31,6 +31,7 @@ export function WCCStandings() {
         const teamColor = TEAM_COLORS[team.constructor_name] || '#777777';
         const abbr = TEAM_ABBR[team.constructor_name] || team.constructor_name.slice(0, 3).toUpperCase();
         const fillPercent = (team.points / maxPoints) * 100;
+        const hasSprint = (team.sprint_points || 0) > 0;
 
         return (
           <div key={team.constructor_id} className="space-y-2">
@@ -51,6 +52,11 @@ export function WCCStandings() {
               <div className="text-right">
                 <div className="text-xl font-black text-white font-barlow">{team.points}</div>
                 <div className="text-xs text-[#777777]">pts</div>
+                {hasSprint && (
+                  <div className="text-[10px] font-mono mt-0.5" style={{ color: '#F59E0B' }}>
+                    {team.sprint_points} sprint
+                  </div>
+                )}
               </div>
             </div>
             <div className="h-2 bg-[#111111] rounded overflow-hidden border border-[rgba(255,255,255,0.07)]">

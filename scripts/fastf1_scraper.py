@@ -49,11 +49,11 @@ class FastF1Scraper:
             print(f"[ERROR] Error fetching schedule: {e}")
             return None
     
-    def get_race_results(self, season=CURRENT_SEASON, round_num=1):
-        """Get results for a specific race"""
+    def _fetch_session_results(self, season, round_num, session_identifier, label):
+        """Fetch results for a FastF1 session and return a normalised DataFrame."""
         try:
-            print(f"\n  [RACE] Fetching race results for Round {round_num}...")
-            session = fastf1.get_session(season, round_num, 'R')
+            print(f"\n  [{label}] Fetching {label} results for Round {round_num}...")
+            session = fastf1.get_session(season, round_num, session_identifier)
             session.load()
 
             column_map = {
@@ -73,7 +73,7 @@ class FastF1Scraper:
             for expected_col in column_map.values():
                 if expected_col not in results.columns:
                     results[expected_col] = pd.NA
-            
+
             results["season"] = season
             results["round"] = round_num
             results["race_name"] = session.event.get("EventName") if hasattr(session, "event") else None
@@ -94,12 +94,26 @@ class FastF1Scraper:
             results["circuit_id"] = circuit_id
             results["circuit_name"] = circuit_name
             results["source"] = "fastf1"
-            
-            print(f"    [OK] Loaded {len(results)} results")
+
+            print(f"    [OK] Loaded {len(results)} {label} results")
             return results
         except Exception as e:
-            print(f"    [ERROR] Error: {e}")
+            print(f"    [ERROR] {label}: {e}")
             return None
+
+    def get_race_results(self, season=CURRENT_SEASON, round_num=1):
+        """Get results for a specific race (main race only, session_type='R')."""
+        results = self._fetch_session_results(season, round_num, 'R', 'RACE')
+        if results is not None:
+            results["session_type"] = "R"
+        return results
+
+    def get_sprint_results(self, season=CURRENT_SEASON, round_num=1):
+        """Get results for a sprint race (session_type='S')."""
+        results = self._fetch_session_results(season, round_num, 'S', 'SPRINT')
+        if results is not None:
+            results["session_type"] = "S"
+        return results
 
     def fetch_historical_results(self, seasons):
         """Fetch historical race results for multiple seasons using FastF1."""
@@ -121,6 +135,8 @@ class FastF1Scraper:
                     if hasattr(row, "get"):
                         race_date = row.get("EventDate") or row.get("Session1Date")
                     race_results["race_date"] = race_date
+                    if "session_type" not in race_results.columns:
+                        race_results["session_type"] = "R"
                     all_results.append(race_results)
 
         if not all_results:
@@ -204,12 +220,21 @@ class FastF1Scraper:
             has_race = _session_has_happened(row, 'Session5DateUtc', now_utc)
             has_qualifying = _session_has_happened(row, 'Session4DateUtc', now_utc)
 
+            # Sprint weekend detection: EventFormat is 'sprint_shootout' or 'sprint'
+            event_format = str(row.get('EventFormat', 'conventional')).lower()
+            is_sprint_weekend = event_format in ('sprint_shootout', 'sprint')
+            has_sprint = is_sprint_weekend and _session_has_happened(row, 'Session3DateUtc', now_utc)
+
             race_date = row['Session1Date'] if pd.notna(row['Session1Date']) else 'TBD'
-            
-            print(f"\nRound {round_num}: {gp_name} ({race_date})")
-            
+            sprint_label = " [SPRINT WEEKEND]" if is_sprint_weekend else ""
+            print(f"\nRound {round_num}: {gp_name} ({race_date}){sprint_label}")
+
+            if has_sprint:
+                sprint_results = self.get_sprint_results(season, round_num)
+                if sprint_results is not None:
+                    all_results.append(sprint_results)
+
             if has_race:
-                # Get race results
                 race_results = self.get_race_results(season, round_num)
                 if race_results is not None:
                     all_results.append(race_results)
@@ -241,25 +266,25 @@ class FastF1Scraper:
         else:
             print(f"[WARN] No qualifying data available")
         
-        # Get standings from last race
+        # Get standings — points include sprint, wins/podiums count main race only
         standings = None
         if not results_df.empty:
             latest_round = results_df['round'].max()
+            race_only = results_df[results_df.get('session_type', pd.Series(['R'] * len(results_df))) == 'R'] \
+                if 'session_type' in results_df.columns else results_df
 
-            # Aggregate points across all races
             standings = results_df.groupby(
                 ['driver_id', 'driver_code', 'driver_name', 'constructor_id', 'constructor_name']
             ).agg({
                 'points': 'sum',
                 'driver_number': 'first',
-                'finish_position': 'min',
             }).reset_index()
 
-            wins = results_df[results_df['finish_position'] == 1].groupby(
+            wins = race_only[race_only['finish_position'] == 1].groupby(
                 ['driver_id']
             ).size().rename('wins')
 
-            podiums = results_df[results_df['finish_position'] <= 3].groupby(
+            podiums = race_only[race_only['finish_position'] <= 3].groupby(
                 ['driver_id']
             ).size().rename('podiums')
 
@@ -270,7 +295,6 @@ class FastF1Scraper:
 
             standings = standings.sort_values('points', ascending=False).reset_index(drop=True)
             standings['position'] = range(1, len(standings) + 1)
-            standings = standings.drop(columns=['finish_position'])
 
             standings.to_csv(self.output_dir / f"{CURRENT_SEASON}_standings.csv", index=False)
             print(f"[OK] Saved standings: {len(standings)} drivers (updated after Round {int(latest_round)})")

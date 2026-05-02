@@ -6,6 +6,7 @@ from pathlib import Path
 
 from sqlalchemy import Column, DateTime, Float, Integer, String, create_engine, select, text
 from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy import func
 
 from app.schemas import RoundPredictions, validate_predictions_file
 from config.settings import DATABASE_URL, PATHS
@@ -59,6 +60,7 @@ class RaceResult(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     round = Column(Integer, nullable=False)
+    session_type = Column(String, nullable=False, default="R")
     driver_id = Column(String, nullable=False)
     final_pos = Column(Integer, nullable=True)
     points = Column(Float, nullable=True)
@@ -74,6 +76,17 @@ class ModelMetric(Base):
     ndcg = Column(Float, nullable=False)
     mae = Column(Float, nullable=False)
     alpha = Column(Float, nullable=False)
+    created_at = Column(DateTime(timezone=True), nullable=False)
+
+
+class SessionLog(Base):
+    __tablename__ = "session_log"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    round = Column(Integer, nullable=False)
+    session_type = Column(String, nullable=False)
+    drivers_processed = Column(Integer, nullable=False, default=0)
+    points_distributed = Column(Float, nullable=False, default=0.0)
     created_at = Column(DateTime(timezone=True), nullable=False)
 
 
@@ -103,6 +116,7 @@ _ensure_column("pipeline_runs", "pid", "pid INTEGER")
 _ensure_column("predictions_log", "prediction_type", "prediction_type TEXT NOT NULL DEFAULT 'post'")
 _ensure_column("predictions_log", "constructor_id", "constructor_id TEXT")
 _ensure_column("predictions_log", "predicted_pos", "predicted_pos INTEGER NOT NULL DEFAULT 0")
+_ensure_column("race_results_log", "session_type", "session_type TEXT NOT NULL DEFAULT 'R'")
 
 
 def _utcnow() -> datetime:
@@ -250,12 +264,15 @@ def upsert_session_data(round_num: int, session_type: str, frame) -> None:
         session.commit()
 
 
-def upsert_race_results(round_num: int, frame) -> None:
+def upsert_race_results(round_num: int, frame, session_type: str = "R") -> None:
     if frame is None or len(frame) == 0:
         return
 
     with SessionLocal() as session:
-        session.query(RaceResult).filter(RaceResult.round == round_num).delete()
+        session.query(RaceResult).filter(
+            RaceResult.round == round_num,
+            RaceResult.session_type == session_type,
+        ).delete()
         rows = []
         for _, row in frame.iterrows():
             final_pos = row.get("finish_position")
@@ -263,6 +280,7 @@ def upsert_race_results(round_num: int, frame) -> None:
             rows.append(
                 RaceResult(
                     round=round_num,
+                    session_type=session_type,
                     driver_id=str(row.get("driver_id", "")),
                     final_pos=int(final_pos) if final_pos is not None and str(final_pos) != "nan" else None,
                     points=float(points) if points is not None and str(points) != "nan" else None,
@@ -295,6 +313,45 @@ def update_pipeline_pid(run_id: int, pid: int) -> None:
         if run is not None:
             run.pid = pid
             session.commit()
+
+
+def log_session_ingestion(round_num: int, session_type: str, drivers_processed: int, points_distributed: float) -> None:
+    with SessionLocal() as session:
+        session.add(
+            SessionLog(
+                round=round_num,
+                session_type=session_type,
+                drivers_processed=drivers_processed,
+                points_distributed=points_distributed,
+                created_at=_utcnow(),
+            )
+        )
+        session.commit()
+
+
+def get_latest_job_runs() -> dict:
+    """Return the most recent PipelineRun for each job_name."""
+    with SessionLocal() as session:
+        job_names = [r[0] for r in session.query(PipelineRun.job_name).distinct().all()]
+        result = {}
+        for job_name in job_names:
+            run = (
+                session.query(PipelineRun)
+                .filter(PipelineRun.job_name == job_name)
+                .order_by(PipelineRun.started_at.desc())
+                .first()
+            )
+            if run:
+                result[job_name] = {
+                    "job_name": run.job_name,
+                    "round": run.round,
+                    "started_at": run.started_at.isoformat() if run.started_at else None,
+                    "finished_at": run.finished_at.isoformat() if run.finished_at else None,
+                    "status": run.status,
+                    "rounds_completed": run.rounds_completed,
+                    "error_message": run.error_message,
+                }
+        return result
 
 
 def scan_orphaned_pipelines() -> None:
