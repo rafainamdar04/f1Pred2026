@@ -58,6 +58,7 @@ PUBLIC_API_PATHS = {
     "/api/standings/constructors",
     "/api/standings/drivers/sprints",
     "/api/standings/constructors/sprints",
+    "/api/predictions/accuracy",
 }
 PUBLIC_API_PREFIXES = (
     "/api/predictions",
@@ -532,8 +533,12 @@ def _next_race_round() -> int:
 @app.get("/api/predictions/next")
 def get_next_predictions() -> dict:
     round_num = _next_race_round()
-    predictions = _load_postquali_predictions(_prediction_path(round_num, "postquali"))
-    return _inject_prediction_created_at(predictions.model_dump(), "post")
+    postquali_path = _prediction_path(round_num, "postquali")
+    if postquali_path.exists():
+        predictions = _load_postquali_predictions(postquali_path)
+        return _inject_prediction_created_at(predictions.model_dump(), "post")
+    predictions = _load_prequali_predictions(_prediction_path(round_num, "prequali"))
+    return _inject_prediction_created_at(predictions.model_dump(), "pre")
 
 
 @app.get("/api/predictions/next/prequali")
@@ -546,7 +551,10 @@ def get_next_prequali_predictions() -> dict:
 @app.get("/api/predictions/next/postquali")
 def get_next_postquali_predictions() -> dict:
     round_num = _next_race_round()
-    predictions = _load_postquali_predictions(_prediction_path(round_num, "postquali"))
+    path = _prediction_path(round_num, "postquali")
+    if not path.exists():
+        raise HTTPException(status_code=404, detail=f"No postquali predictions yet for round {round_num}")
+    predictions = _load_postquali_predictions(path)
     return _inject_prediction_created_at(predictions.model_dump(), "post")
 
 
@@ -598,8 +606,15 @@ def get_status() -> dict:
     status_payload = _load_status_payload()
     last_pipeline_run = status_payload.get("last_run")
 
-    predictions_dir = Path(PATHS["predictions"])
-    rounds_completed = len(list(predictions_dir.glob("round_*_postquali_predictions.json"))) if predictions_dir.exists() else 0
+    import pandas as _pd
+    _results_file = Path(PATHS["data"]) / f"{CURRENT_SEASON}_race_results.csv"
+    if _results_file.exists():
+        _rdf = _pd.read_csv(_results_file, usecols=lambda c: c in ("round", "session_type"))
+        if "session_type" not in _rdf.columns:
+            _rdf["session_type"] = "R"
+        rounds_completed = int(_rdf[_rdf["session_type"] == "R"]["round"].nunique())
+    else:
+        rounds_completed = 0
 
     try:
         jobs = get_latest_job_runs()
@@ -892,7 +907,7 @@ def get_race_results() -> dict:
         if "session_type" not in df.columns:
             df["session_type"] = "R"
 
-        result_cols = ['driver_name', 'constructor_name', 'finish_position', 'points']
+        result_cols = ['driver_id', 'driver_name', 'constructor_name', 'finish_position', 'points']
 
         # Group by round — each round may have a main race row and a sprint row
         races = []
@@ -925,6 +940,80 @@ def get_race_results() -> dict:
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch race results: {str(e)}")
+
+
+def _compute_round_accuracy(round_num: int) -> dict | None:
+    """Compute prediction accuracy for a single round. Returns None if data is incomplete."""
+    import pandas as pd
+
+    results_file = Path(PATHS["data"]) / f"{CURRENT_SEASON}_race_results.csv"
+    if not results_file.exists():
+        return None
+
+    df = pd.read_csv(results_file)
+    df["finish_position"] = pd.to_numeric(df["finish_position"], errors="coerce")
+    if "session_type" not in df.columns:
+        df["session_type"] = "R"
+
+    race_df = df[(df["round"].astype(int) == round_num) & (df["session_type"] == "R")]
+    if race_df.empty:
+        return None
+
+    actual_top3 = race_df.nsmallest(3, "finish_position")[["driver_id", "driver_name"]].to_dict("records")
+    actual_ids = [str(r["driver_id"]).lower() for r in actual_top3]
+
+    pred_path = _prediction_path(round_num, "postquali")
+    predicted_ids: list[str] = []
+    if pred_path.exists():
+        try:
+            post = validate_postquali_predictions_file(str(pred_path))
+            predicted_ids = [r.driver_id.lower() for r in post.rows[:3]]
+        except Exception:
+            pass
+
+    hits = len(set(predicted_ids) & set(actual_ids))
+    p1_correct = bool(predicted_ids and actual_ids and predicted_ids[0] == actual_ids[0])
+
+    return {
+        "round": round_num,
+        "predicted_top3": predicted_ids,
+        "actual_top3": actual_ids,
+        "hits": hits,
+        "p1_correct": p1_correct,
+        "has_result": True,
+        "has_prediction": bool(predicted_ids),
+    }
+
+
+@app.get("/api/predictions/{round_num}/accuracy")
+def get_prediction_accuracy(round_num: int) -> dict:
+    """Prediction accuracy for a single round — compares post-quali predictions vs actual top 3."""
+    result = _compute_round_accuracy(round_num)
+    if result is None:
+        raise HTTPException(status_code=404, detail=f"No results or predictions found for round {round_num}")
+    return result
+
+
+@app.get("/api/predictions/accuracy")
+def get_all_accuracy() -> list:
+    """Prediction accuracy for every round that has both predictions and results."""
+    import pandas as pd
+
+    results_file = Path(PATHS["data"]) / f"{CURRENT_SEASON}_race_results.csv"
+    if not results_file.exists():
+        return []
+
+    df = pd.read_csv(results_file)
+    if "session_type" not in df.columns:
+        df["session_type"] = "R"
+    completed_rounds = sorted(df[df["session_type"] == "R"]["round"].astype(int).unique().tolist())
+
+    out = []
+    for r in completed_rounds:
+        acc = _compute_round_accuracy(r)
+        if acc:
+            out.append(acc)
+    return out
 
 
 def _kill_process_tree(pid: int) -> None:

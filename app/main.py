@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 import uvicorn
@@ -26,11 +27,21 @@ def _startup_orphan_scan() -> None:
         logging.getLogger(__name__).warning("Orphan scan failed: %s", exc)
 
 
+@asynccontextmanager
+async def _lifespan(application):
+    _startup_dirs()
+    _startup_orphan_scan()
+    start_scheduler()
+    yield
+    shutdown_scheduler()
+
+
+# Wire lifespan at module level so it fires whether uvicorn imports app directly
+# or main() is called — previously these were only registered inside main().
+app.router.lifespan_context = _lifespan
+
+
 def main() -> None:
-    app.add_event_handler("startup", _startup_dirs)
-    app.add_event_handler("startup", _startup_orphan_scan)
-    app.add_event_handler("startup", start_scheduler)
-    app.add_event_handler("shutdown", shutdown_scheduler)
     uvicorn.run(app, host="0.0.0.0", port=8000)
 
 

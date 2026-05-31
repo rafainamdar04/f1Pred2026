@@ -28,7 +28,7 @@ scheduler = BackgroundScheduler(timezone=timezone.utc)
 
 QUALI_RETRY_MINUTES = 15
 QUALI_MAX_RETRIES = 3
-RACE_RETRY_MINUTES = 15
+RACE_RETRY_MINUTES = 30   # wide window — space retries out more
 RACE_MAX_RETRIES = 3
 PREDICTION_RETRY_MINUTES = 15
 PREDICTION_MAX_RETRIES = 3
@@ -477,6 +477,7 @@ def retrain_model(round_num: int) -> None:
     print(f"[retrain_model] success round={round_num}")
     log_job_finish(run_id, "success")
     _write_status("success")
+    schedule_next_race_weekend()
 
 
 def ingest_results(round_num: int, race_name: str, retry_count: int = 0) -> None:
@@ -561,11 +562,13 @@ def _weekend_schedule_times(
     if race.get("is_sprint"):
         sprint_end = _parse_utc(race.get("sprint_end_utc"))
         if sprint_end:
-            sprint_ingest_run = sprint_end + timedelta(minutes=90)
+            # sprint_end_utc already has 30 min built-in past actual end; 60 min more is sufficient
+            sprint_ingest_run = sprint_end + timedelta(minutes=60)
 
-    quali_ingest_run = quali_end + timedelta(minutes=30)
-    # 3-hour delay to allow post-race penalties/DSQs to be applied
-    race_ingest_run = race_end + timedelta(hours=3)
+    # Full session.load() can lag; 90 min gives FastF1 a reliable window before first retry
+    quali_ingest_run = quali_end + timedelta(minutes=90)
+    # 12-hour delay ensures steward decisions and penalty adjustments are fully applied
+    race_ingest_run = race_end + timedelta(hours=12)
     return prequali_run, sprint_ingest_run, quali_ingest_run, race_ingest_run
 
 

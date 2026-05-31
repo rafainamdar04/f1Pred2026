@@ -1,6 +1,14 @@
 import logging
 import os
 import sys
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+# Load .env.local then .env (local takes precedence; neither is required)
+_root = Path(__file__).resolve().parents[1]
+load_dotenv(_root / ".env.local", override=True)
+load_dotenv(_root / ".env", override=False)
 
 _logger = logging.getLogger(__name__)
 

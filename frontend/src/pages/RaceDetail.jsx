@@ -79,10 +79,11 @@ function CircuitCard({ race, selected, status, onClick }) {
         {race.name.replace(' Grand Prix', '')}
       </div>
       <div style={{ fontSize: '9px', color: '#444' }}>{fmtDate(race.date)}</div>
-      <div style={{ marginTop: '2px' }}>
+      <div style={{ marginTop: '2px', display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
         {isDone      && <span style={S.chip('muted')}>Done</span>}
         {isNext      && <span style={S.chip('red')}>Next</span>}
         {isCancelled && <span style={{ ...S.chip('muted'), opacity: .5 }}>Cancelled</span>}
+        {race.is_sprint && <span style={S.chip('amb')}>Sprint</span>}
       </div>
     </div>
   );
@@ -187,6 +188,7 @@ export function RaceDetail() {
 
   const { data: prequali } = useApi(selectedRound ? `/api/predictions/${selectedRound}/prequali` : null);
   const { data: postquali } = useApi(selectedRound ? `/api/predictions/${selectedRound}/postquali` : null);
+  const { data: accuracy } = useApi(selectedRound && resultsRounds.includes(selectedRound) ? `/api/predictions/${selectedRound}/accuracy` : null);
 
   const races = calendar?.races ?? [];
   const selectedRace = races.find(r => r.round === selectedRound);
@@ -198,7 +200,7 @@ export function RaceDetail() {
 
   // Actual podium rows for the results column
   const actualRows = actualResult
-    ? (actualResult.podium || []).map(p => ({ driver_id: (p.driver_name || '').split(' ').pop(), driver_name: p.driver_name, constructor_name: p.constructor_name || '' }))
+    ? (actualResult.podium || []).map(p => ({ driver_id: p.driver_id || (p.driver_name || '').split(' ').pop().toLowerCase(), driver_name: p.driver_name, constructor_name: p.constructor_name || '' }))
     : [];
 
   const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
@@ -258,6 +260,38 @@ export function RaceDetail() {
               </div>
             </div>
 
+            {/* Accuracy banner — only shown for completed rounds */}
+            {accuracy && (
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap',
+                background: '#101010', border: '1px solid rgba(255,255,255,.055)',
+                borderRadius: '3px', padding: '14px 20px', marginBottom: '24px',
+              }}>
+                <div style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: '#444', marginRight: '4px' }}>Model accuracy</div>
+                <div style={{
+                  ...S.chip(accuracy.p1_correct ? 'grn' : accuracy.hits >= 2 ? 'amb' : 'red'),
+                  fontSize: '10px', padding: '4px 10px',
+                }}>
+                  {accuracy.hits}/3 top-3 hits{accuracy.p1_correct ? ' · P1 correct' : ''}
+                </div>
+                <div style={{ display: 'flex', gap: '10px', marginLeft: 'auto' }}>
+                  {['Predicted', 'Actual'].map((label, li) => {
+                    const ids = li === 0 ? accuracy.predicted_top3 : accuracy.actual_top3;
+                    return (
+                      <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontSize: '9px', color: '#444', letterSpacing: '1px', textTransform: 'uppercase' }}>{label}:</span>
+                        {ids.map((id, i) => (
+                          <span key={id} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '13px', color: i === 0 ? '#fff' : '#888' }}>
+                            {id.toUpperCase()}{i < ids.length - 1 ? '' : ''}
+                          </span>
+                        ))}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Comparison grid */}
             {(!prequali && !postquali) ? (
               <div style={{ padding: '48px 24px', textAlign: 'center', background: '#101010', border: '1px solid rgba(255,255,255,.055)', borderRadius: '3px' }}>
@@ -265,19 +299,23 @@ export function RaceDetail() {
                 <div style={{ fontSize: '12px', color: '#444' }}>Predictions will appear once the pipeline runs for this round.</div>
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: actualRows.length > 0 ? 'repeat(3, 1fr)' : 'repeat(2, 1fr)', gap: '16px' }}>
-                <PredCol
-                  title="Pre-Qualifying"
-                  rows={prequali?.rows ?? []}
-                  updatedAt={prequali?.created_at ?? null}
-                />
-                <PredCol
-                  title="Post-Qualifying"
-                  rows={postquali?.rows ?? []}
-                  updatedAt={postquali?.created_at ?? null}
-                  showDelta
-                  preRanks={preRanks}
-                />
+              <div style={{ display: 'grid', gridTemplateColumns: [prequali, postquali, actualRows.length > 0].filter(Boolean).length === 3 ? 'repeat(3, 1fr)' : [prequali, postquali].filter(Boolean).length === 2 ? 'repeat(2, 1fr)' : '1fr', gap: '16px' }}>
+                {prequali && (
+                  <PredCol
+                    title="Pre-Qualifying"
+                    rows={prequali.rows ?? []}
+                    updatedAt={prequali.created_at ?? null}
+                  />
+                )}
+                {postquali && (
+                  <PredCol
+                    title="Post-Qualifying"
+                    rows={postquali.rows ?? []}
+                    updatedAt={postquali.created_at ?? null}
+                    showDelta
+                    preRanks={preRanks}
+                  />
+                )}
                 {actualRows.length > 0 && (
                   <PredCol
                     title="Actual Result"

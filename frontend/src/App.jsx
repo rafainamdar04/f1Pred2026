@@ -4,19 +4,26 @@ import { RaceDetail } from './pages/RaceDetail';
 import { ModelReport } from './pages/ModelReport';
 import { Drivers } from './pages/Drivers';
 import { Archive } from './pages/Archive';
+import { useApi } from './hooks/useApi';
 
 const NAV_LINKS = [
   { to: '/', label: 'Dashboard', exact: true },
   { to: '/race', label: 'Races', exact: false },
-  { to: '/model', label: 'Model', exact: false },
   { to: '/drivers', label: 'Drivers', exact: false },
+  { to: '/archive', label: 'Archive', exact: false },
+  { to: '/model', label: 'Model', exact: false },
 ];
 
 function NavBar() {
   const { pathname } = useLocation();
+  const { data: pipelineStatus } = useApi('/api/status', { pollInterval: 30000 });
 
   const isActive = ({ to, exact }) =>
     exact ? pathname === to : pathname === to || pathname.startsWith(to + '/');
+
+  const isRunning = pipelineStatus?.status === 'running';
+  const dotColor = isRunning ? '#E10600' : '#34d058';
+  const statusText = isRunning ? 'Pipeline running' : 'Live';
 
   return (
     <nav style={{
@@ -63,8 +70,8 @@ function NavBar() {
 
       {/* Live dot */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '7px', fontSize: '11px', color: '#444', fontFamily: "'DM Mono', monospace" }}>
-        <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#34d058', flexShrink: 0, animation: 'livepulse 2.2s ease-in-out infinite' }} />
-        <span>Pre-quali live</span>
+        <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: dotColor, flexShrink: 0, animation: 'livepulse 2.2s ease-in-out infinite' }} />
+        <span>{statusText}</span>
       </div>
 
       <style>{`

@@ -187,9 +187,9 @@ export function Home() {
   const { data: prePred } = useApi('/api/predictions/next/prequali');
   const { data: calendar } = useApi('/api/calendar');
   const { data: metrics } = useApi('/api/metrics');
-  const { data: driverStandings } = useApi('/api/standings/drivers');
-  const { data: constructorStandings } = useApi('/api/standings/constructors');
-  const { data: status } = useApi('/api/status');
+  const { data: driverStandings } = useApi('/api/standings/drivers', { pollInterval: 60000 });
+  const { data: constructorStandings } = useApi('/api/standings/constructors', { pollInterval: 60000 });
+  const { data: status } = useApi('/api/status', { pollInterval: 60000 });
 
   const predictions = nextPred || prePred;
   const round = predictions?.round;

@@ -1,16 +1,94 @@
+import { useNavigate } from 'react-router-dom';
 import { useApi } from '../hooks/useApi';
 import { getTeamColor } from '../constants/teamColors';
 
 const S = {
   wrap: { maxWidth: '1180px', margin: '0 auto', padding: '0 48px' },
+  chip: (v) => ({
+    display: 'inline-flex', alignItems: 'center',
+    fontSize: '9px', fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase',
+    padding: '3px 8px', borderRadius: '2px',
+    ...(v === 'grn' ? { background: 'rgba(52,208,88,.08)',   color: '#34d058', border: '1px solid rgba(52,208,88,.2)' } :
+       v === 'amb' ? { background: 'rgba(245,158,11,.08)', color: '#F59E0B', border: '1px solid rgba(245,158,11,.2)' } :
+       v === 'red' ? { background: 'rgba(225,6,0,.1)',     color: '#E10600', border: '1px solid rgba(225,6,0,.2)' } :
+                    { background: 'rgba(255,255,255,.04)', color: '#444',    border: '1px solid rgba(255,255,255,.055)' }),
+  }),
 };
 
+function AccuracyBadge({ accuracy }) {
+  if (!accuracy) return null;
+  const { hits, p1_correct, has_prediction } = accuracy;
+  if (!has_prediction) return <span style={S.chip('muted')}>No prediction</span>;
+  const variant = p1_correct ? 'grn' : hits >= 2 ? 'amb' : hits === 1 ? 'muted' : 'red';
+  return <span style={S.chip(variant)}>{hits}/3 hits{p1_correct ? ' · P1 ✓' : ''}</span>;
+}
+
+function RaceCard({ race, actualResult, accuracy, onClick }) {
+  const predicted = accuracy?.predicted_top3 ?? [];
+  const actual = accuracy?.actual_top3 ?? [];
+
+  return (
+    <div
+      onClick={onClick}
+      style={{
+        background: '#0c0c0c', border: '1px solid rgba(255,255,255,.055)',
+        borderRadius: '3px', padding: '18px 20px', cursor: 'pointer',
+        transition: 'border-color .2s',
+      }}
+      onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(225,6,0,.3)'}
+      onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,.055)'}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+        <div style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: '#444' }}>Round {race.round}</div>
+        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+          <AccuracyBadge accuracy={accuracy} />
+          <span style={S.chip('grn')}>Done</span>
+        </div>
+      </div>
+
+      <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '18px', color: '#fff', marginBottom: '10px' }}>
+        {race.name?.replace(' Grand Prix', '') || '—'} GP
+      </div>
+
+      {actualResult?.winner && (
+        <div style={{ fontSize: '11px', color: '#888', marginBottom: '10px' }}>
+          Winner: <span style={{ color: '#fff', fontWeight: 500 }}>{actualResult.winner}</span>
+        </div>
+      )}
+
+      {/* Prediction vs Actual */}
+      {(predicted.length > 0 || actual.length > 0) && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '10px', paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,.055)' }}>
+          {[['Predicted', predicted], ['Actual', actual]].map(([label, ids]) => (
+            <div key={label}>
+              <div style={{ fontSize: '8px', letterSpacing: '1.5px', textTransform: 'uppercase', color: '#444', marginBottom: '4px' }}>{label}</div>
+              {ids.map((id, i) => (
+                <div key={id} style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '12px', color: i === 0 ? '#fff' : '#666', lineHeight: 1.6 }}>
+                  {i + 1}. {id.toUpperCase()}
+                </div>
+              ))}
+              {ids.length === 0 && <div style={{ fontSize: '11px', color: '#444' }}>—</div>}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function Archive() {
+  const navigate = useNavigate();
   const { data: calendar } = useApi('/api/calendar');
   const { data: history } = useApi('/api/predictions/history');
   const { data: results } = useApi('/api/race-results');
+  const { data: allAccuracy } = useApi('/api/predictions/accuracy');
 
-  // Build stats per driver using predicted rank
+  const accuracyByRound = {};
+  if (allAccuracy) {
+    allAccuracy.forEach(a => { accuracyByRound[a.round] = a; });
+  }
+
+  // Build predictability leaderboard from history
   const driverStats = {};
   if (history) {
     const byRound = {};
@@ -22,7 +100,6 @@ export function Archive() {
       rows.sort((a, b) => (b.final_score ?? 0) - (a.final_score ?? 0));
       rows.forEach((r, i) => { r._rank = i + 1; });
     });
-
     history.forEach(p => {
       if (!driverStats[p.driver_id]) {
         driverStats[p.driver_id] = { driver_id: p.driver_id, constructor_id: p.constructor_id, rounds: 0, top3: 0, scores: [] };
@@ -37,8 +114,12 @@ export function Archive() {
     .map(d => ({ ...d, hitRate: d.rounds > 0 ? (d.top3 / d.rounds) * 100 : 0 }))
     .sort((a, b) => b.hitRate - a.hitRate);
 
-  const races = calendar?.races ?? [];
   const completedRaces = results?.races ?? [];
+  const races = calendar?.races ?? [];
+  const completedRounds = new Set(completedRaces.map(r => r.round));
+
+  const overallHits = allAccuracy ? allAccuracy.reduce((s, a) => s + a.hits, 0) : null;
+  const totalPossible = allAccuracy ? allAccuracy.length * 3 : null;
 
   return (
     <div style={S.wrap}>
@@ -53,32 +134,32 @@ export function Archive() {
             <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 900, fontSize: 'clamp(24px, 2.5vw, 36px)', color: '#fff', letterSpacing: '-.5px', lineHeight: 1 }}>Season Archive</div>
           </div>
           <div style={{ fontSize: '10px', color: '#444', textAlign: 'right', lineHeight: 1.8, fontFamily: "'DM Mono', monospace" }}>
-            {completedRaces.length} races complete<br />All predictions & results
+            {completedRaces.length} races complete<br />
+            {overallHits !== null ? `${overallHits}/${totalPossible} top-3 hits overall` : 'All predictions & results'}
           </div>
         </div>
 
-        {/* Completed race results */}
+        {/* Completed race cards */}
         {completedRaces.length > 0 && (
           <div style={{ marginBottom: '52px' }}>
             <div style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '3px', textTransform: 'uppercase', color: '#444', marginBottom: '16px' }}>Race Results</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '12px' }}>
               {completedRaces.map(race => (
-                <div key={race.round} style={{ background: '#0c0c0c', border: '1px solid rgba(255,255,255,.055)', borderRadius: '3px', padding: '18px 20px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                    <div style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', color: '#444' }}>Round {race.round}</div>
-                    <div style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '1.5px', textTransform: 'uppercase', padding: '2px 6px', borderRadius: '2px', background: 'rgba(52,208,88,.08)', color: '#34d058', border: '1px solid rgba(52,208,88,.2)' }}>Done</div>
-                  </div>
-                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '18px', color: '#fff', marginBottom: '8px' }}>
-                    {race.name?.replace(' Grand Prix', '') || '—'} GP
-                  </div>
-                  {race.winner && (
-                    <div style={{ fontSize: '12px', color: '#888' }}>
-                      Winner: <span style={{ color: '#fff', fontWeight: 500 }}>{race.winner}</span>
-                    </div>
-                  )}
-                </div>
+                <RaceCard
+                  key={race.round}
+                  race={race}
+                  actualResult={race}
+                  accuracy={accuracyByRound[race.round] ?? null}
+                  onClick={() => navigate(`/race/${race.round}`)}
+                />
               ))}
             </div>
+          </div>
+        )}
+
+        {completedRaces.length === 0 && (
+          <div style={{ background: '#0c0c0c', border: '1px solid rgba(255,255,255,.055)', borderRadius: '3px', padding: '40px', textAlign: 'center', fontSize: '12px', color: '#444', marginBottom: '52px' }}>
+            No completed races yet
           </div>
         )}
 

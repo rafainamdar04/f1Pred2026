@@ -220,9 +220,11 @@ class FastF1Scraper:
             has_race = _session_has_happened(row, 'Session5DateUtc', now_utc)
             has_qualifying = _session_has_happened(row, 'Session4DateUtc', now_utc)
 
-            # Sprint weekend detection: EventFormat is 'sprint_shootout' or 'sprint'
+            # Sprint weekend detection: EventFormat varies ('sprint_qualifying', 'sprint_shootout',
+            # 'sprint'); also check Session3 label as a reliable fallback.
             event_format = str(row.get('EventFormat', 'conventional')).lower()
-            is_sprint_weekend = event_format in ('sprint_shootout', 'sprint')
+            session3_label = str(row.get('Session3', '')).lower()
+            is_sprint_weekend = ('sprint' in event_format or 'sprint' in session3_label)
             has_sprint = is_sprint_weekend and _session_has_happened(row, 'Session3DateUtc', now_utc)
 
             race_date = row['Session1Date'] if pd.notna(row['Session1Date']) else 'TBD'
@@ -313,24 +315,17 @@ def main():
     print("=" * 70)
     
     if standings is not None and not standings.empty:
-        print(f"\n📊 DRIVER STANDINGS ({len(standings)} drivers):")
+        print(f"\nDRIVER STANDINGS ({len(standings)} drivers):")
         print(standings[['position', 'driver_code', 'driver_name', 'constructor_name', 'points']].head(12).to_string(index=False))
-    
+
     if results is not None and not results.empty:
-        print(f"\n🏁 RACE RESULTS ({results['round'].nunique()} races completed):")
+        print(f"\nRACE RESULTS ({results['round'].nunique()} rounds, {len(results)} rows):")
+        print(f"   session_types: {sorted(results['session_type'].unique()) if 'session_type' in results.columns else 'R'}")
         print(f"   Rounds: {sorted(results['round'].unique())}")
-        if 1 in results['round'].values:
-            race_1 = results[results['round'] == 1].sort_values('finish_position')
-            print(f"   Race 1 Sample (top 5):")
-            print(race_1[['driver_code', 'grid_position', 'finish_position', 'points']].head(5).to_string(index=False))
-    
+
     if qualifying is not None and not qualifying.empty:
-        print(f"\n🏆 QUALIFYING DATA ({qualifying['round'].nunique()} sessions):")
+        print(f"\nQUALIFYING DATA ({qualifying['round'].nunique()} sessions):")
         print(f"   Rounds: {sorted(qualifying['round'].unique())}")
-        if 3 in qualifying['round'].values:
-            suzuka = qualifying[qualifying['round'] == 3].sort_values('grid_position')
-            print(f"   Suzuka Grid (Round 3, top 12):")
-            print(suzuka[['grid_position', 'driver_code', 'driver_name', 'constructor_name']].head(12).to_string(index=False))
     
     return standings, results, qualifying
 
