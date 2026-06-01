@@ -99,7 +99,8 @@ def _refresh_calendar_cache() -> list[dict]:
         date_value = (event_date or race_start or quali_start)
 
         event_format = str(row.get("EventFormat", "conventional")).lower()
-        is_sprint = event_format in ("sprint_shootout", "sprint")
+        session3_label = str(row.get("Session3", "")).lower()
+        is_sprint = "sprint" in event_format or "sprint" in session3_label
         sprint_start = _parse_utc(row.get("Session3DateUtc")) if is_sprint else None
 
         races.append(

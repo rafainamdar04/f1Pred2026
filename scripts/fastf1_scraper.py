@@ -65,7 +65,9 @@ class FastF1Scraper:
                 'TeamId': 'constructor_id',
                 'GridPosition': 'grid_position',
                 'Position': 'finish_position',
+                'ClassifiedPosition': 'classified_position',
                 'Points': 'points',
+                'Status': 'status',
             }
             available_cols = [col for col in column_map if col in session.results.columns]
             results = session.results[available_cols].copy()

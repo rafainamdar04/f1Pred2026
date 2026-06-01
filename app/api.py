@@ -331,7 +331,8 @@ def _fetch_calendar_fastf1() -> list[dict] | None:
             race_end = (pd.to_datetime(race_start) + pd.Timedelta(hours=2)).isoformat()
 
         event_format = str(row.get("EventFormat", "conventional")).lower()
-        is_sprint = event_format in ("sprint_shootout", "sprint")
+        session3_label = str(row.get("Session3", "")).lower()
+        is_sprint = "sprint" in event_format or "sprint" in session3_label
         sprint_start = None
         sprint_end = None
         if is_sprint and "Session3DateUtc" in row and pd.notna(row["Session3DateUtc"]):
@@ -893,46 +894,74 @@ def get_sprint_constructor_standings() -> dict:
         raise HTTPException(status_code=500, detail=f"Failed to compute sprint constructor standings: {exc}")
 
 
+def _normalise_driver_status(raw: object) -> str:
+    """Map FastF1 raw Status strings to a clean display value."""
+    if raw is None or (isinstance(raw, float) and __import__("math").isnan(raw)):
+        return "Finished"
+    s = str(raw).strip()
+    if not s or s in ("Finished",):
+        return "Finished"
+    if s == "Lapped":
+        return "Lapped"
+    if s in ("Did not start", "Withdrawn"):
+        return "DNS"
+    if s == "Disqualified":
+        return "DSQ"
+    # Retired / Accident / Mechanical / Collision / Engine / Gearbox / etc.
+    return "DNF"
+
+
 @app.get("/api/race-results")
 def get_race_results() -> dict:
-    """Fetch race results for the current season"""
+    """Fetch race results for the current season — returns all 22 drivers per race."""
     try:
         import pandas as pd
-        
+
         results_file = Path(PATHS["data"]) / f"{CURRENT_SEASON}_race_results.csv"
         if not results_file.exists():
             raise HTTPException(status_code=404, detail="Race results file not found")
-        
+
         df = pd.read_csv(results_file)
         if "session_type" not in df.columns:
             df["session_type"] = "R"
+        if "status" not in df.columns:
+            df["status"] = "Finished"
 
-        result_cols = ['driver_id', 'driver_name', 'constructor_name', 'finish_position', 'points']
+        def _row_to_dict(row) -> dict:
+            return {
+                "driver_id": str(row["driver_id"]).lower() if pd.notna(row.get("driver_id")) else "",
+                "driver_name": str(row["driver_name"]) if pd.notna(row.get("driver_name")) else "",
+                "constructor_name": str(row["constructor_name"]) if pd.notna(row.get("constructor_name")) else "",
+                "constructor_id": str(row.get("constructor_id", "")).lower() if pd.notna(row.get("constructor_id")) else "",
+                "finish_position": int(row["finish_position"]) if pd.notna(row.get("finish_position")) else None,
+                "grid_position": int(row["grid_position"]) if pd.notna(row.get("grid_position")) else None,
+                "points": float(row["points"]) if pd.notna(row.get("points")) else 0.0,
+                "status": _normalise_driver_status(row.get("status")),
+            }
 
-        # Group by round — each round may have a main race row and a sprint row
         races = []
-        for round_num in sorted(df['round'].unique()):
-            round_data = df[df['round'] == round_num]
-            race_name = round_data['race_name'].iloc[0]
+        for round_num in sorted(df["round"].unique()):
+            round_data = df[df["round"] == round_num]
+            race_name = round_data["race_name"].iloc[0]
 
-            race_rows = round_data[round_data['session_type'] == 'R']
-            sprint_rows = round_data[round_data['session_type'] == 'S']
+            race_rows = round_data[round_data["session_type"] == "R"].sort_values("finish_position")
+            sprint_rows = round_data[round_data["session_type"] == "S"].sort_values("finish_position")
 
-            top_10 = race_rows.nsmallest(10, 'finish_position')[result_cols].to_dict('records') if not race_rows.empty else []
-            winners = race_rows[race_rows['finish_position'] == 1.0]
+            all_22 = [_row_to_dict(row) for _, row in race_rows.iterrows()]
+            winners = race_rows[race_rows["finish_position"] == 1.0]
 
-            sprint_top_8 = sprint_rows.nsmallest(8, 'finish_position')[result_cols].to_dict('records') if not sprint_rows.empty else []
+            sprint_top_8 = [_row_to_dict(row) for _, row in sprint_rows.head(8).iterrows()]
 
             races.append({
                 "round": int(round_num),
                 "name": race_name,
-                "winner": winners.iloc[0]['driver_name'] if not winners.empty else None,
-                "podium": top_10,
+                "winner": winners.iloc[0]["driver_name"] if not winners.empty else None,
+                "podium": all_22,
                 "sprint_podium": sprint_top_8,
                 "is_sprint": len(sprint_rows) > 0,
                 "status": "completed",
             })
-        
+
         return {
             "season": CURRENT_SEASON,
             "races": races,

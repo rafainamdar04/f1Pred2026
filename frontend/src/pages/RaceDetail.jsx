@@ -89,6 +89,28 @@ function CircuitCard({ race, selected, status, onClick }) {
   );
 }
 
+/* ── Status badge for DNF / DNS / DSQ / Lapped ── */
+const STATUS_STYLE = {
+  DNF:    { bg: 'rgba(225,6,0,.15)',     color: '#E10600', border: '1px solid rgba(225,6,0,.3)'     },
+  DNS:    { bg: 'rgba(255,255,255,.06)', color: '#555',    border: '1px solid rgba(255,255,255,.1)' },
+  DSQ:    { bg: 'rgba(245,158,11,.12)', color: '#F59E0B', border: '1px solid rgba(245,158,11,.3)'  },
+  Lapped: { bg: 'rgba(255,255,255,.04)', color: '#555',    border: '1px solid rgba(255,255,255,.07)'},
+};
+
+function StatusBadge({ status }) {
+  const s = STATUS_STYLE[status];
+  if (!s) return null;
+  return (
+    <div style={{
+      fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '11px',
+      letterSpacing: '1px', padding: '2px 6px', borderRadius: '2px',
+      background: s.bg, color: s.color, border: s.border, textAlign: 'center', lineHeight: 1.4,
+    }}>
+      {status}
+    </div>
+  );
+}
+
 /* ── Prediction column ── */
 function PredCol({ title, rows, updatedAt = null, showDelta = false, preRanks = {} }) {
   const formatRelative = (value) => {
@@ -126,35 +148,59 @@ function PredCol({ title, rows, updatedAt = null, showDelta = false, preRanks = 
         <div style={{ fontSize: '9px', color: '#444', marginTop: '4px' }}>{formatRelative(updatedAt)}</div>
       </div>
       {rows.map((row, idx) => {
-        const pos = idx + 1;
+        const pos = row.finish_position ?? (idx + 1);
+        const status = row.status || 'Finished';
+        const isOut = status === 'DNF' || status === 'DNS' || status === 'DSQ';
         const tc = getTeamColor(row.constructor_id || row.constructor_name || '');
         const preRank = preRanks[row.driver_id] || 0;
         const delta = showDelta && preRank ? preRank - pos : null;
-        const posColor = pos === 1 ? '#E10600' : pos <= 3 ? '#dedede' : '#444';
+        const posColor = isOut ? '#333' : pos === 1 ? '#E10600' : pos <= 3 ? '#dedede' : pos <= 10 ? '#666' : '#333';
+        const rowOpacity = isOut ? 0.5 : status === 'Lapped' ? 0.7 : 1;
 
         return (
           <div key={row.driver_id || idx} style={{
-            display: 'grid', gridTemplateColumns: '28px 3px 1fr auto',
+            display: 'grid', gridTemplateColumns: '34px 3px 1fr auto',
             gap: '8px', alignItems: 'center',
-            padding: '8px 16px',
+            padding: '6px 16px',
             borderBottom: '1px solid rgba(255,255,255,.02)',
-            transition: 'background .15s',
+            opacity: rowOpacity,
           }}>
-            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 800, fontSize: '16px', color: posColor, textAlign: 'center' }}>{pos}</div>
-            <div style={{ height: '24px', background: tc, borderRadius: '1px', flexShrink: 0 }} />
+            {/* Position or status badge */}
+            {isOut ? (
+              <StatusBadge status={status} />
+            ) : status === 'Lapped' ? (
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 800, fontSize: '14px', color: posColor }}>{pos}</div>
+                <div style={{ fontSize: '7px', color: '#444', letterSpacing: '1px' }}>LAP</div>
+              </div>
+            ) : (
+              <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 800, fontSize: '16px', color: posColor, textAlign: 'center' }}>{pos}</div>
+            )}
+
+            <div style={{ height: '24px', background: tc, borderRadius: '1px', flexShrink: 0, opacity: isOut ? 0.4 : 1 }} />
+
             <div>
-              <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '15px', color: '#fff' }}>
+              <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '14px', color: isOut ? '#555' : '#fff' }}>
                 {(row.driver_id || row.driver_name || '').toUpperCase()}
               </div>
-              <div style={{ fontSize: '9px', color: '#444', marginTop: '1px' }}>{row.constructor_id || row.constructor_name || ''}</div>
+              <div style={{ fontSize: '9px', color: '#333', marginTop: '1px' }}>{row.constructor_id || row.constructor_name || ''}</div>
             </div>
-            {delta !== null && (
+
+            {/* Delta arrow */}
+            {delta !== null ? (
               <div style={{
-                fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '15px', textAlign: 'right',
+                fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '14px', textAlign: 'right',
                 color: delta > 0 ? '#34d058' : delta < 0 ? '#E10600' : '#444',
               }}>
                 {delta > 0 ? `↑${delta}` : delta < 0 ? `↓${Math.abs(delta)}` : '—'}
               </div>
+            ) : (
+              /* Points for actual result column */
+              row.points > 0 ? (
+                <div style={{ fontSize: '10px', color: '#444', textAlign: 'right', fontFamily: "'DM Mono', monospace" }}>
+                  +{row.points}
+                </div>
+              ) : null
             )}
           </div>
         );
@@ -194,13 +240,24 @@ export function RaceDetail() {
   const selectedRace = races.find(r => r.round === selectedRound);
   const actualResult = results?.races?.find(r => r.round === selectedRound);
 
-  // Build pre-quali rank map for delta calculation
+  // Rank maps for delta arrows
   const preRanks = {};
   prequali?.rows?.forEach((row, idx) => { preRanks[row.driver_id] = idx + 1; });
 
-  // Actual podium rows for the results column
+  const postqualiRanks = {};
+  postquali?.rows?.forEach((row, idx) => { postqualiRanks[row.driver_id] = idx + 1; });
+
+  // All 22 drivers with status for the actual result column
   const actualRows = actualResult
-    ? (actualResult.podium || []).map(p => ({ driver_id: p.driver_id || (p.driver_name || '').split(' ').pop().toLowerCase(), driver_name: p.driver_name, constructor_name: p.constructor_name || '' }))
+    ? (actualResult.podium || []).map(p => ({
+        driver_id: p.driver_id || '',
+        driver_name: p.driver_name || '',
+        constructor_name: p.constructor_name || '',
+        constructor_id: p.constructor_id || '',
+        finish_position: p.finish_position ?? null,
+        points: p.points ?? 0,
+        status: p.status || 'Finished',
+      }))
     : [];
 
   const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
@@ -256,6 +313,9 @@ export function RaceDetail() {
                   </span>
                   <span style={S.chip('muted')}>Round {selectedRound}</span>
                   <span style={S.chip('muted')}>{fmtDate(selectedRace.date)}</span>
+                  {(selectedRace.is_sprint || actualResult?.is_sprint) && (
+                    <span style={S.chip('amb')}>Sprint Weekend</span>
+                  )}
                 </div>
               </div>
             </div>
@@ -292,6 +352,48 @@ export function RaceDetail() {
               </div>
             )}
 
+            {/* Sprint result section */}
+            {actualResult?.sprint_podium?.length > 0 && (
+              <div style={{ marginBottom: '24px' }}>
+                <div style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '3px', textTransform: 'uppercase', color: '#F59E0B', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ width: '14px', height: '1px', background: '#F59E0B', display: 'inline-block' }} />
+                  Sprint Race Result
+                </div>
+                <div style={{ background: '#101010', border: '1px solid rgba(245,158,11,.2)', borderRadius: '3px', overflow: 'hidden' }}>
+                  <div style={{ padding: '10px 18px', borderBottom: '1px solid rgba(245,158,11,.15)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: '#F59E0B' }}>Top 8 — Sprint</div>
+                    <div style={{ fontSize: '9px', color: '#444' }}>Points awarded: 8-7-6-5-4-3-2-1</div>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))' }}>
+                    {actualResult.sprint_podium.map((p, idx) => {
+                      const tc = getTeamColor(p.constructor_name || '');
+                      const posColor = idx === 0 ? '#F59E0B' : idx < 3 ? '#dedede' : '#666';
+                      return (
+                        <div key={p.driver_id || idx} style={{
+                          display: 'grid', gridTemplateColumns: '28px 3px 1fr auto',
+                          gap: '8px', alignItems: 'center',
+                          padding: '8px 16px',
+                          borderBottom: '1px solid rgba(255,255,255,.02)',
+                        }}>
+                          <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 800, fontSize: '16px', color: posColor, textAlign: 'center' }}>{idx + 1}</div>
+                          <div style={{ height: '24px', background: tc, borderRadius: '1px', flexShrink: 0 }} />
+                          <div>
+                            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '14px', color: '#fff' }}>
+                              {(p.driver_name || p.driver_id || '').split(' ').pop().toUpperCase()}
+                            </div>
+                            <div style={{ fontSize: '9px', color: '#444' }}>{p.constructor_name || ''}</div>
+                          </div>
+                          <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '15px', color: '#F59E0B', textAlign: 'right' }}>
+                            +{p.points}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Comparison grid */}
             {(!prequali && !postquali) ? (
               <div style={{ padding: '48px 24px', textAlign: 'center', background: '#101010', border: '1px solid rgba(255,255,255,.055)', borderRadius: '3px' }}>
@@ -299,7 +401,7 @@ export function RaceDetail() {
                 <div style={{ fontSize: '12px', color: '#444' }}>Predictions will appear once the pipeline runs for this round.</div>
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: [prequali, postquali, actualRows.length > 0].filter(Boolean).length === 3 ? 'repeat(3, 1fr)' : [prequali, postquali].filter(Boolean).length === 2 ? 'repeat(2, 1fr)' : '1fr', gap: '16px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: (() => { const n = [prequali, postquali, actualRows.length > 0 ? true : null].filter(Boolean).length; return n === 3 ? 'repeat(3, 1fr)' : n === 2 ? 'repeat(2, 1fr)' : '1fr'; })(), gap: '16px' }}>
                 {prequali && (
                   <PredCol
                     title="Pre-Qualifying"
@@ -320,6 +422,8 @@ export function RaceDetail() {
                   <PredCol
                     title="Actual Result"
                     rows={actualRows}
+                    showDelta={Object.keys(postqualiRanks).length > 0}
+                    preRanks={postqualiRanks}
                   />
                 )}
               </div>
