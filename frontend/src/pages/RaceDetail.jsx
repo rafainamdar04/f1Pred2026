@@ -25,6 +25,14 @@ function getRaceStatus(race, resultsRounds, roundsComplete) {
   return 'upcoming';
 }
 
+/* ── Race-week phase → header chip ── */
+const PHASE_CHIP = {
+  completed: { v: 'muted', label: 'Complete' },
+  postquali: { v: 'grn',   label: 'Post-Quali Out' },
+  prequali:  { v: 'red',   label: 'Pre-Quali Out' },
+  upcoming:  { v: 'muted', label: 'Upcoming' },
+};
+
 /* ── Circuit card ── */
 function CircuitCard({ race, selected, status, onClick }) {
   const svg = getCircuitSvg(race.name);
@@ -232,12 +240,18 @@ export function RaceDetail() {
     }
   }, [roundParam, calendar, roundsComplete]);
 
-  const { data: prequali } = useApi(selectedRound ? `/api/predictions/${selectedRound}/prequali` : null);
-  const { data: postquali } = useApi(selectedRound ? `/api/predictions/${selectedRound}/postquali` : null);
-  const { data: accuracy } = useApi(selectedRound && resultsRounds.includes(selectedRound) ? `/api/predictions/${selectedRound}/accuracy` : null);
-
   const races = calendar?.races ?? [];
   const selectedRace = races.find(r => r.round === selectedRound);
+  const phase = selectedRace?.phase ?? 'upcoming';
+  const prequaliReady = !!selectedRace?.prequali_available;
+  const postqualiReady = !!selectedRace?.postquali_available;
+  const resultReady = !!selectedRace?.result_available;
+
+  // Only fetch each prediction once it has reached its appointed publication time.
+  const { data: prequali } = useApi(selectedRound && prequaliReady ? `/api/predictions/${selectedRound}/prequali` : null);
+  const { data: postquali } = useApi(selectedRound && postqualiReady ? `/api/predictions/${selectedRound}/postquali` : null);
+  const { data: accuracy } = useApi(selectedRound && resultsRounds.includes(selectedRound) ? `/api/predictions/${selectedRound}/accuracy` : null);
+
   const actualResult = results?.races?.find(r => r.round === selectedRound);
 
   // Rank maps for delta arrows
@@ -308,8 +322,8 @@ export function RaceDetail() {
                   {selectedRace.name.replace(' Grand Prix', '')}<br />Grand Prix
                 </div>
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
-                  <span style={S.chip(resultsRounds.includes(selectedRound) ? 'muted' : selectedRound === roundsComplete + 1 ? 'red' : 'muted')}>
-                    {resultsRounds.includes(selectedRound) ? 'Complete' : selectedRound === roundsComplete + 1 ? 'Next Race' : 'Upcoming'}
+                  <span style={S.chip(PHASE_CHIP[phase]?.v ?? 'muted')}>
+                    {PHASE_CHIP[phase]?.label ?? 'Upcoming'}
                   </span>
                   <span style={S.chip('muted')}>Round {selectedRound}</span>
                   <span style={S.chip('muted')}>{fmtDate(selectedRace.date)}</span>
@@ -394,40 +408,61 @@ export function RaceDetail() {
               </div>
             )}
 
-            {/* Comparison grid */}
-            {(!prequali && !postquali) ? (
-              <div style={{ padding: '48px 24px', textAlign: 'center', background: '#101010', border: '1px solid rgba(255,255,255,.055)', borderRadius: '3px' }}>
-                <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '22px', color: '#444', marginBottom: '8px' }}>No Predictions Yet</div>
-                <div style={{ fontSize: '12px', color: '#444' }}>Predictions will appear once the pipeline runs for this round.</div>
-              </div>
-            ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: (() => { const n = [prequali, postquali, actualRows.length > 0 ? true : null].filter(Boolean).length; return n === 3 ? 'repeat(3, 1fr)' : n === 2 ? 'repeat(2, 1fr)' : '1fr'; })(), gap: '16px' }}>
-                {prequali && (
-                  <PredCol
-                    title="Pre-Qualifying"
-                    rows={prequali.rows ?? []}
-                    updatedAt={prequali.created_at ?? null}
-                  />
-                )}
-                {postquali && (
-                  <PredCol
-                    title="Post-Qualifying"
-                    rows={postquali.rows ?? []}
-                    updatedAt={postquali.created_at ?? null}
-                    showDelta
-                    preRanks={preRanks}
-                  />
-                )}
-                {actualRows.length > 0 && (
-                  <PredCol
-                    title="Actual Result"
-                    rows={actualRows}
-                    showDelta={Object.keys(postqualiRanks).length > 0}
-                    preRanks={postqualiRanks}
-                  />
-                )}
-              </div>
-            )}
+            {/* Comparison grid — gated by race-week phase */}
+            {(() => {
+              const showActual = resultReady && actualRows.length > 0;
+              const fmtOpen = (d) => d
+                ? new Date(d).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'UTC' }) + ' UTC'
+                : 'soon';
+
+              if (phase === 'upcoming') {
+                return (
+                  <div style={{ padding: '48px 24px', textAlign: 'center', background: '#101010', border: '1px solid rgba(255,255,255,.055)', borderRadius: '3px' }}>
+                    <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '22px', color: '#666', marginBottom: '8px' }}>Upcoming</div>
+                    <div style={{ fontSize: '12px', color: '#444' }}>Pre-qualifying prediction opens {fmtOpen(selectedRace?.prequali_at_utc)}</div>
+                  </div>
+                );
+              }
+
+              if (!prequali && !postquali && !showActual) {
+                return (
+                  <div style={{ padding: '48px 24px', textAlign: 'center', background: '#101010', border: '1px solid rgba(255,255,255,.055)', borderRadius: '3px' }}>
+                    <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '22px', color: '#444', marginBottom: '8px' }}>Prediction Pending</div>
+                    <div style={{ fontSize: '12px', color: '#444' }}>The {phase === 'prequali' ? 'pre-qualifying' : 'post-qualifying'} run hasn’t completed yet.</div>
+                  </div>
+                );
+              }
+
+              const n = [prequali, postquali, showActual ? true : null].filter(Boolean).length;
+              return (
+                <div style={{ display: 'grid', gridTemplateColumns: n === 3 ? 'repeat(3, 1fr)' : n === 2 ? 'repeat(2, 1fr)' : '1fr', gap: '16px' }}>
+                  {prequali && (
+                    <PredCol
+                      title="Pre-Qualifying"
+                      rows={prequali.rows ?? []}
+                      updatedAt={prequali.created_at ?? null}
+                    />
+                  )}
+                  {postquali && (
+                    <PredCol
+                      title="Post-Qualifying"
+                      rows={postquali.rows ?? []}
+                      updatedAt={postquali.created_at ?? null}
+                      showDelta
+                      preRanks={preRanks}
+                    />
+                  )}
+                  {showActual && (
+                    <PredCol
+                      title="Actual Result"
+                      rows={actualRows}
+                      showDelta={Object.keys(postqualiRanks).length > 0}
+                      preRanks={postqualiRanks}
+                    />
+                  )}
+                </div>
+              );
+            })()}
           </div>
         )}
       </div>

@@ -32,6 +32,9 @@ frontend/node_modules/
 build/
 dist/
 frontend/dist/
+*.tsbuildinfo
+.eslintcache
+.vite/
 
 # Jupyter
 .ipynb_checkpoints/

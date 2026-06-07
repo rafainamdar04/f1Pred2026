@@ -237,6 +237,97 @@ def _estimate_weekend_sessions(race: dict[str, Any]) -> dict[str, str | None]:
     }
 
 
+def _parse_iso_utc(value: Any) -> datetime | None:
+    if not value:
+        return None
+    try:
+        parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    except (ValueError, TypeError):
+        return None
+    return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
+
+
+def _phase_times(race: dict[str, Any]) -> tuple[datetime | None, datetime | None, datetime | None]:
+    """Appointed times a race's pre-quali, post-quali, and result become public.
+
+    Mirrors the scheduler: pre-quali 3 days out at 12:00 UTC, post-quali 90 min
+    after qualifying ends, result 12 h after the race ends. Falls back to the
+    date-based estimates when real session times are unavailable.
+    """
+    sessions = _estimate_weekend_sessions(race)
+    prequali_at = _parse_iso_utc(race.get("prequali_run_utc") or sessions.get("prequali_run_utc"))
+
+    quali_end = _parse_iso_utc(race.get("quali_end_utc"))
+    if quali_end:
+        postquali_at = quali_end + timedelta(minutes=90)
+    else:
+        postquali_at = _parse_iso_utc(race.get("quali_ingest_run_utc") or sessions.get("quali_ingest_run_utc"))
+
+    # A result becomes legitimate to show once the race has actually finished.
+    # (The scheduler's +12h is an ingestion safety margin, not a display embargo;
+    # the result column only renders once the data is present regardless.)
+    race_end = _parse_iso_utc(race.get("race_end_utc"))
+    if not race_end:
+        race_start = _parse_iso_utc(race.get("race_start_utc"))
+        race_end = (
+            race_start + timedelta(hours=2)
+            if race_start
+            else _parse_iso_utc(race.get("race_ingest_run_utc") or sessions.get("race_ingest_run_utc"))
+        )
+    result_at = race_end
+
+    return prequali_at, postquali_at, result_at
+
+
+def _race_phase(race: dict[str, Any], now: datetime | None = None) -> str:
+    now = now or datetime.now(timezone.utc)
+    prequali_at, postquali_at, result_at = _phase_times(race)
+    if result_at and now >= result_at:
+        return "completed"
+    if postquali_at and now >= postquali_at:
+        return "postquali"
+    if prequali_at and now >= prequali_at:
+        return "prequali"
+    return "upcoming"
+
+
+def _enrich_phase(race: dict[str, Any], now: datetime | None = None) -> dict[str, Any]:
+    now = now or datetime.now(timezone.utc)
+    prequali_at, postquali_at, result_at = _phase_times(race)
+    race["prequali_at_utc"] = prequali_at.isoformat() if prequali_at else None
+    race["postquali_at_utc"] = postquali_at.isoformat() if postquali_at else None
+    race["result_at_utc"] = result_at.isoformat() if result_at else None
+    race["prequali_available"] = bool(prequali_at and now >= prequali_at)
+    race["postquali_available"] = bool(postquali_at and now >= postquali_at)
+    race["result_available"] = bool(result_at and now >= result_at)
+    race["phase"] = _race_phase(race, now)
+    return race
+
+
+def _race_for_round(round_num: int) -> dict[str, Any] | None:
+    for race in _get_calendar():
+        try:
+            if int(race.get("round", 0)) == int(round_num):
+                return race
+        except (TypeError, ValueError):
+            continue
+    return None
+
+
+def _guard_not_before_appointed(round_num: int, mode: str) -> None:
+    """Block serving a prediction before its appointed publication time."""
+    race = _race_for_round(round_num)
+    if race is None:
+        return
+    prequali_at, postquali_at, _ = _phase_times(race)
+    appointed = prequali_at if mode == "prequali" else postquali_at
+    if appointed and datetime.now(timezone.utc) < appointed:
+        raise HTTPException(
+            status_code=404,
+            detail=f"{mode} predictions for round {round_num} are not published until {appointed.isoformat()}",
+        )
+
+
 def _newest_model_timestamp() -> str | None:
     models_dir = Path(PATHS["models"])
     if not models_dir.exists():
@@ -507,9 +598,11 @@ def get_metrics() -> dict:
 
 @app.get("/api/calendar")
 def get_calendar() -> dict:
+    now = datetime.now(timezone.utc)
+    races = [_enrich_phase(race, now) for race in _get_calendar()]
     return {
         "season": CURRENT_SEASON,
-        "races": _get_calendar(),
+        "races": races,
     }
 
 
@@ -534,10 +627,17 @@ def _next_race_round() -> int:
 @app.get("/api/predictions/next")
 def get_next_predictions() -> dict:
     round_num = _next_race_round()
+    race = _race_for_round(round_num)
+    now = datetime.now(timezone.utc)
+    _, postquali_at, _ = _phase_times(race) if race else (None, None, None)
+
     postquali_path = _prediction_path(round_num, "postquali")
-    if postquali_path.exists():
+    postquali_published = postquali_at is None or now >= postquali_at
+    if postquali_path.exists() and postquali_published:
         predictions = _load_postquali_predictions(postquali_path)
         return _inject_prediction_created_at(predictions.model_dump(), "post")
+
+    _guard_not_before_appointed(round_num, "prequali")
     predictions = _load_prequali_predictions(_prediction_path(round_num, "prequali"))
     return _inject_prediction_created_at(predictions.model_dump(), "pre")
 
@@ -545,6 +645,8 @@ def get_next_predictions() -> dict:
 @app.get("/api/predictions/next/prequali")
 def get_next_prequali_predictions() -> dict:
     latest_path = _latest_prediction_path("prequali")
+    round_num = int(re.search(r"round_(\d+)_", latest_path.name).group(1))
+    _guard_not_before_appointed(round_num, "prequali")
     predictions = _load_prequali_predictions(latest_path)
     return _inject_prediction_created_at(predictions.model_dump(), "pre")
 
@@ -552,6 +654,7 @@ def get_next_prequali_predictions() -> dict:
 @app.get("/api/predictions/next/postquali")
 def get_next_postquali_predictions() -> dict:
     round_num = _next_race_round()
+    _guard_not_before_appointed(round_num, "postquali")
     path = _prediction_path(round_num, "postquali")
     if not path.exists():
         raise HTTPException(status_code=404, detail=f"No postquali predictions yet for round {round_num}")
@@ -561,12 +664,14 @@ def get_next_postquali_predictions() -> dict:
 
 @app.get("/api/predictions/{round_num}/prequali")
 def get_prequali_predictions(round_num: int) -> dict:
+    _guard_not_before_appointed(round_num, "prequali")
     predictions = _load_prequali_predictions(_prediction_path(round_num, "prequali"))
     return _inject_prediction_created_at(predictions.model_dump(), "pre")
 
 
 @app.get("/api/predictions/{round_num}/postquali")
 def get_postquali_predictions(round_num: int) -> dict:
+    _guard_not_before_appointed(round_num, "postquali")
     predictions = _load_postquali_predictions(_prediction_path(round_num, "postquali"))
     return _inject_prediction_created_at(predictions.model_dump(), "post")
 

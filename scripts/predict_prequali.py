@@ -119,6 +119,33 @@ def _rationale_from_features(
     return pd.Series(rationale, index=target.index)
 
 
+def _load_upcoming_target(processed_dir: Path, round_num: int, race_name: str) -> pd.DataFrame | None:
+    """Feature row for an upcoming round built from all completed rounds.
+
+    build_processed_features writes {season}_upcoming_features for the next
+    not-yet-raced round; its form features already reflect every completed
+    round, so pre-quali predictions stay current instead of reusing the
+    previous round's snapshot.
+    """
+    parquet_path = processed_dir / f"{CURRENT_SEASON}_upcoming_features.parquet"
+    csv_path = processed_dir / f"{CURRENT_SEASON}_upcoming_features.csv"
+    df: pd.DataFrame | None = None
+    if parquet_path.exists():
+        try:
+            df = pd.read_parquet(parquet_path)
+        except ImportError:
+            df = pd.read_csv(csv_path) if csv_path.exists() else None
+    elif csv_path.exists():
+        df = pd.read_csv(csv_path)
+    if df is None:
+        return None
+    target = df[df["round"] == round_num].copy()
+    if target.empty:
+        return None
+    target["race_name"] = race_name
+    return target
+
+
 def _prepare_prequal_target(results_df: pd.DataFrame, next_round: int, race_name: str) -> pd.DataFrame:
     latest = results_df.sort_values(["driver_id", "round"]).groupby("driver_id").tail(1).copy()
     latest["round"] = next_round
@@ -151,7 +178,9 @@ def main() -> None:
     if (results_current["round"] == args.round).any():
         target = results_current[results_current["round"] == args.round].copy()
     else:
-        target = _prepare_prequal_target(results_current, args.round, args.race_name)
+        target = _load_upcoming_target(processed_dir, args.round, args.race_name)
+        if target is None or target.empty:
+            target = _prepare_prequal_target(results_current, args.round, args.race_name)
 
     hist_scores = hist_model.predict(historical[PRE_QUALI_FEATURES].fillna(0.0)) if not historical.empty else np.array([])
     if len(hist_scores):

@@ -128,9 +128,42 @@ def _rationale_from_features(
     return pd.Series(rationale, index=target.index)
 
 
-def _prepare_target_base(results_df: pd.DataFrame, round_num: int, race_name: str) -> pd.DataFrame:
+def _load_upcoming_target(processed_dir: Path, round_num: int, race_name: str) -> pd.DataFrame | None:
+    """Feature row for an upcoming round built from all completed rounds.
+
+    build_processed_features writes {season}_upcoming_features for the next
+    not-yet-raced round; its form features already reflect every completed
+    round. Grid columns stay NaN here and are filled from the grid file.
+    """
+    parquet_path = processed_dir / f"{CURRENT_SEASON}_upcoming_features.parquet"
+    csv_path = processed_dir / f"{CURRENT_SEASON}_upcoming_features.csv"
+    df: pd.DataFrame | None = None
+    if parquet_path.exists():
+        try:
+            df = pd.read_parquet(parquet_path)
+        except ImportError:
+            df = pd.read_csv(csv_path) if csv_path.exists() else None
+    elif csv_path.exists():
+        df = pd.read_csv(csv_path)
+    if df is None:
+        return None
+    target = df[df["round"] == round_num].copy()
+    if target.empty:
+        return None
+    target["race_name"] = race_name
+    return target
+
+
+def _prepare_target_base(
+    results_df: pd.DataFrame, round_num: int, race_name: str, processed_dir: Path | None = None
+) -> pd.DataFrame:
     if (results_df["round"] == round_num).any():
         return results_df[results_df["round"] == round_num].copy()
+
+    if processed_dir is not None:
+        upcoming = _load_upcoming_target(processed_dir, round_num, race_name)
+        if upcoming is not None and not upcoming.empty:
+            return upcoming
 
     latest = results_df.sort_values(["driver_id", "round"]).groupby("driver_id").tail(1).copy()
     latest["round"] = round_num
@@ -189,7 +222,7 @@ def main() -> None:
     cur_model.load_model(cur_path)
 
     grid = _load_grid(Path(args.grid_file))
-    target_base = _prepare_target_base(results_current, args.round, args.race_name)
+    target_base = _prepare_target_base(results_current, args.round, args.race_name, processed_dir)
     target = _add_grid_features(target_base, grid)
 
     hist_scores = hist_model.predict(historical[PRE_QUALI_FEATURES + POST_QUALI_FEATURES].fillna(0.0)) if not historical.empty else np.array([])

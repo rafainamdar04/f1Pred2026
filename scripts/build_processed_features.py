@@ -4,6 +4,7 @@ Build processed feature datasets from FastF1-sourced CSVs.
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 import sys
 
@@ -60,6 +61,22 @@ def _normalize_circuit_name(name: object) -> str:
         return "unknown"
     text = str(name)
     return text.replace("São", "Sao")
+
+
+def _circuit_label(row: pd.Series) -> object:
+    """First non-empty value among circuit_name then race_name.
+
+    Note: a NaN cannot be skipped with ``a or b`` because float('nan') is
+    truthy; an empty CSV cell also reads back as NaN, so both must be
+    filtered explicitly before falling back to the race name.
+    """
+    for key in ("circuit_name", "race_name"):
+        value = row.get(key)
+        if value is None or (isinstance(value, float) and np.isnan(value)):
+            continue
+        if str(value).strip():
+            return value
+    return None
 
 
 def _data_quality_report(df: pd.DataFrame, label: str) -> None:
@@ -192,6 +209,13 @@ def _build_features(
                 poles = int((driver_hist["grid_position"] == 1).sum()) if races_completed else 0
                 recent_top3_rate = (podiums / races_completed) if races_completed else np.nan
 
+                # Reliability prior: DNF rate over the driver's PRIOR races. Must not
+                # read this race's own status, which is the very outcome being predicted.
+                if status_col and races_completed:
+                    dnf_rate = float(driver_hist[status_col].apply(_status_to_dnf).mean())
+                else:
+                    dnf_rate = np.nan
+
                 if races_completed:
                     last_race = driver_hist.sort_values("round").iloc[-1]
                     last_finish = last_race["finish_position"]
@@ -217,9 +241,7 @@ def _build_features(
                     else np.nan
                 )
 
-                circuit_name = _normalize_circuit_name(
-                    row.get("circuit_name") or row.get("race_name")
-                )
+                circuit_name = _normalize_circuit_name(_circuit_label(row))
                 track_overtaking_index = TRACK_OVERTAKING_INDEX.get(circuit_name, 0.5)
                 track_key = (driver_id, circuit_name)
                 driver_track_history = driver_track_history_map.get(
@@ -228,11 +250,20 @@ def _build_features(
                 )
                 constructor_development_rate = _constructor_development_rate(constructor_hist)
                 quali_gap_to_pole = _quali_gap_from_row(row)
+                # Some sources emit a sentinel (-1 / 0) when the race-session grid
+                # was not captured; treat any non-positive slot as unknown so it can
+                # be filled from a grid file rather than poisoning grid features.
                 grid_position = row.get("grid_position")
-                if grid_position is None or (isinstance(grid_position, float) and np.isnan(grid_position)):
+                if (
+                    grid_position is None
+                    or (isinstance(grid_position, float) and np.isnan(grid_position))
+                    or float(grid_position) <= 0
+                ):
+                    grid_position = np.nan
                     grid_position_weighted = np.nan
                 else:
-                    grid_position_weighted = float(grid_position) * (1.0 - track_overtaking_index)
+                    grid_position = float(grid_position)
+                    grid_position_weighted = grid_position * (1.0 - track_overtaking_index)
 
                 feature_rows.append({
                     "season": season,
@@ -242,7 +273,7 @@ def _build_features(
                     "circuit_name": circuit_name,
                     "driver_id": driver_id,
                     "constructor_id": constructor_id,
-                    "grid_position": row.get("grid_position"),
+                    "grid_position": grid_position,
                     "quali_gap_to_pole": quali_gap_to_pole,
                     "grid_position_weighted": grid_position_weighted,
                     "current_points": points_sum,
@@ -265,10 +296,73 @@ def _build_features(
                     "season_weight": season_weights.get(season, 1.0),
                     "finish_position": row.get("finish_position"),
                     "points": row.get("points"),
-                    "dnf_flag": _status_to_dnf(row.get(status_col)) if status_col else np.nan,
+                    "dnf_flag": dnf_rate,
                 })
 
     return pd.DataFrame(feature_rows)
+
+
+def _load_calendar_names(data_dir: Path) -> dict[int, str]:
+    """Map round number -> race name from the cached season calendar (best effort)."""
+    path = data_dir / f"{CURRENT_SEASON}_calendar.json"
+    if not path.exists():
+        return {}
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (ValueError, OSError):
+        return {}
+    races = payload.get("races") if isinstance(payload, dict) else payload
+    if not isinstance(races, list):
+        return {}
+    names: dict[int, str] = {}
+    for race in races:
+        if not isinstance(race, dict):
+            continue
+        rnd = race.get("round")
+        name = race.get("name") or race.get("raceName")
+        if rnd is None or not name:
+            continue
+        try:
+            names[int(rnd)] = str(name)
+        except (TypeError, ValueError):
+            continue
+    return names
+
+
+def _next_round_roster(current: pd.DataFrame, next_round: int, race_name: str | None) -> pd.DataFrame:
+    """Synthetic entrant rows for an upcoming, not-yet-raced round.
+
+    Takes the most recent round's roster and clears every race-outcome and
+    qualifying field, so _build_features derives the form features purely from
+    the completed rounds (history < next_round). finish/points/grid stay NaN
+    because they are unknown before the race.
+    """
+    completed = current.copy()
+    completed["round"] = pd.to_numeric(completed["round"], errors="coerce")
+    completed = completed.dropna(subset=["round", "driver_id"])
+    if completed.empty:
+        return pd.DataFrame(columns=current.columns)
+
+    latest_round = completed["round"].max()
+    roster = completed[completed["round"] == latest_round].drop_duplicates(
+        subset=["driver_id"], keep="last"
+    ).copy()
+    roster["round"] = next_round
+    if race_name:
+        roster["race_name"] = race_name
+        roster["circuit_name"] = race_name
+    for col in (
+        "finish_position",
+        "points",
+        "grid_position",
+        "quali_gap_to_pole",
+        "classified_position",
+        "status",
+        "circuit_id",
+    ):
+        if col in roster.columns:
+            roster[col] = np.nan
+    return roster
 
 
 def main() -> None:
@@ -335,12 +429,33 @@ def main() -> None:
         driver_track_history,
         driver_fallback_history,
     )
-    current_features = _build_features(
-        current,
+    # Append a synthetic "next round" roster so the upcoming race gets a feature
+    # row whose form reflects every completed round. Pre-race predictions for that
+    # round then use current form instead of the previous round's stale snapshot.
+    completed_rounds = sorted(
+        pd.to_numeric(current["round"], errors="coerce").dropna().astype(int).unique().tolist()
+    )
+    next_round = completed_rounds[-1] + 1 if completed_rounds else None
+    current_ext = current
+    if next_round is not None:
+        calendar_names = _load_calendar_names(data_dir)
+        pending = _next_round_roster(current, next_round, calendar_names.get(next_round))
+        if not pending.empty:
+            current_ext = pd.concat([current, pending], ignore_index=True)
+
+    all_current_features = _build_features(
+        current_ext,
         {CURRENT_SEASON: 1.0},
         driver_track_history,
         driver_fallback_history,
     )
+
+    if next_round is not None:
+        upcoming_features = all_current_features[all_current_features["round"] == next_round].copy()
+        current_features = all_current_features[all_current_features["round"] != next_round].copy()
+    else:
+        upcoming_features = all_current_features.iloc[0:0].copy()
+        current_features = all_current_features
 
     historical_features.to_csv(processed_dir / "historical_features.csv", index=False)
     current_features.to_csv(processed_dir / f"{CURRENT_SEASON}_features.csv", index=False)
@@ -349,6 +464,11 @@ def main() -> None:
 
     print(f"Saved historical features: {len(historical_features)} rows")
     print(f"Saved {CURRENT_SEASON} features: {len(current_features)} rows")
+
+    if not upcoming_features.empty:
+        upcoming_features.to_csv(processed_dir / f"{CURRENT_SEASON}_upcoming_features.csv", index=False)
+        upcoming_features.to_parquet(processed_dir / f"{CURRENT_SEASON}_upcoming_features.parquet", index=False)
+        print(f"Saved {CURRENT_SEASON} upcoming (round {next_round}) features: {len(upcoming_features)} rows")
 
 
 if __name__ == "__main__":
