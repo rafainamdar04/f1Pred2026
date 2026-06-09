@@ -135,51 +135,6 @@ function AccuracyTimeline({ rounds }) {
           </div>
         ))}
       </div>
-
-      {/* Per-round accuracy table — more readable than dots alone */}
-      {rounds.length > 0 && (
-        <div style={{ marginTop: '20px', borderTop: '1px solid rgba(255,255,255,.04)', paddingTop: '16px' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr>
-                {['Round', 'Race', 'Hits', 'P1 correct', 'Predicted top 3', 'Actual top 3'].map(h => (
-                  <th key={h} style={{ fontSize: '8px', letterSpacing: '1.5px', textTransform: 'uppercase', color: '#333', padding: '6px 10px', textAlign: 'left', fontWeight: 600 }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {rounds.map((r, i) => {
-                const hits = r.prequali?.hits ?? r.hits ?? 0;
-                const p1ok = r.prequali?.p1_correct ?? r.p1_correct ?? false;
-                const predicted = (r.prequali?.predicted_top3 ?? r.predicted_top3 ?? []).slice(0, 3);
-                const actual = (r.prequali?.actual_top3 ?? r.actual_top3 ?? []).slice(0, 3);
-                const rowBg = i % 2 === 0 ? 'rgba(255,255,255,.013)' : 'transparent';
-                const hitsColor = hits >= 2 ? '#34d058' : hits === 1 ? '#F59E0B' : '#E10600';
-                return (
-                  <tr key={r.round} style={{ background: rowBg }}>
-                    <td style={{ padding: '7px 10px', fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '14px', color: '#666' }}>R{r.round}</td>
-                    <td style={{ padding: '7px 10px', fontSize: '11px', color: '#555' }}>{r.race_name || r.name || '—'}</td>
-                    <td style={{ padding: '7px 10px' }}>
-                      <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 900, fontSize: '16px', color: hitsColor }}>{hits}/3</span>
-                    </td>
-                    <td style={{ padding: '7px 10px' }}>
-                      {p1ok
-                        ? <span style={{ fontSize: '11px', color: '#34d058' }}>Yes</span>
-                        : <span style={{ fontSize: '11px', color: '#444' }}>No</span>}
-                    </td>
-                    <td style={{ padding: '7px 10px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', color: '#666', letterSpacing: '.5px' }}>
-                      {predicted.map(id => id.toUpperCase()).join(' · ') || '—'}
-                    </td>
-                    <td style={{ padding: '7px 10px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '12px', color: '#555', letterSpacing: '.5px' }}>
-                      {actual.map(id => id.toUpperCase()).join(' · ') || '—'}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
     </div>
   );
 }
@@ -241,29 +196,14 @@ export function ModelReport() {
     { val: alpha.toFixed(2), lbl: 'Alpha (α)', sub: 'Qualifying weight', color: '#F59E0B' },
   ];
 
-  const roundsScored = rounds.length;
-  const prequaliMae = (prequali.mae ?? 0).toFixed(1);
-  const postqualiMae = (postquali.mae ?? 0).toFixed(1);
-
   return (
     <div style={S.wrap}>
       <div style={{ padding: '56px 0 80px' }}>
         <SectionHeader
           eyebrow="ML System"
           title="Model Dashboard"
-          meta={`${roundsScored} rounds scored\nRetrained Sun 20:00 UTC`}
+          meta={`${rounds.length} rounds scored\nRetrained Sun 20:00 UTC`}
         />
-
-        {/* Prose intro — breaks the all-chips feel */}
-        <p style={{
-          fontSize: '13px', lineHeight: 1.75, color: '#666',
-          maxWidth: '620px', marginBottom: '32px', marginTop: '-4px',
-        }}>
-          A LambdaRank model blending historical race performance with qualifying pace data.
-          After each race weekend the model retrains on all completed rounds —
-          {' '}alpha shifts as the season reveals whether raw pace or grid position better predicts finishing order.
-          {roundsScored > 0 && ` Currently averaging ±${prequaliMae} places pre-qualifying and ±${postqualiMae} places post-qualifying.`}
-        </p>
 
         {/* 4 metric cards */}
         <div style={{

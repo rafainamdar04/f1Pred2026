@@ -18,25 +18,16 @@ function DriverCard({ driver }) {
       style={{
         background: '#0c0c0c', border: '1px solid rgba(255,255,255,.055)',
         borderRadius: '3px', overflow: 'hidden', cursor: 'pointer',
-        transition: 'border-color .2s, background .2s, box-shadow .2s, transform .2s',
+        transition: 'border-color .18s, background .18s',
         position: 'relative',
-        boxShadow: driver.position === 1
-          ? `0 0 0 1px ${tc}22, 0 4px 24px ${tc}18`
-          : 'none',
       }}
       onMouseEnter={e => {
-        e.currentTarget.style.borderColor = `${tc}77`;
-        e.currentTarget.style.background = '#111';
-        e.currentTarget.style.boxShadow = `0 0 0 1px ${tc}33, 0 8px 28px rgba(0,0,0,.5)`;
-        e.currentTarget.style.transform = 'translateY(-2px)';
+        e.currentTarget.style.borderColor = `${tc}55`;
+        e.currentTarget.style.background = '#101010';
       }}
       onMouseLeave={e => {
         e.currentTarget.style.borderColor = 'rgba(255,255,255,.055)';
         e.currentTarget.style.background = '#0c0c0c';
-        e.currentTarget.style.boxShadow = driver.position === 1
-          ? `0 0 0 1px ${tc}22, 0 4px 24px ${tc}18`
-          : 'none';
-        e.currentTarget.style.transform = 'translateY(0)';
       }}
     >
       {/* Team color accent bar */}

@@ -65,21 +65,13 @@ function CountdownPanel({ raceStartUtc }) {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px', marginBottom: '20px' }}>
         {blocks.map(b => (
           <div key={b.unit} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-            {/* Flip-clock digit block with center hairline */}
             <div style={{
-              position: 'relative', overflow: 'hidden',
               fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 900,
               fontSize: '40px', lineHeight: 1, color: '#fff',
-              background: '#0c0c0c', border: '1px solid rgba(255,255,255,.07)',
+              background: '#0c0c0c', border: '1px solid rgba(255,255,255,.055)',
               borderRadius: '2px', width: '100%', textAlign: 'center',
-              padding: '10px 4px 9px', letterSpacing: '-1px',
-            }}>
-              {b.val}
-              <div style={{
-                position: 'absolute', left: 0, right: 0, top: '50%',
-                height: '1px', background: 'rgba(0,0,0,.55)', pointerEvents: 'none',
-              }} />
-            </div>
+              padding: '8px 4px', letterSpacing: '-1px',
+            }}>{b.val}</div>
             <div style={{ fontSize: '7px', letterSpacing: '2px', textTransform: 'uppercase', color: '#444' }}>{b.unit}</div>
           </div>
         ))}
@@ -109,46 +101,28 @@ function CountdownPanel({ raceStartUtc }) {
 /* ── WDC row ── */
 function DriverRow({ driver, rank, maxPts }) {
   const tc = getTeamColor(driver.constructor_name);
-  const isLeader = rank === 1;
-  const fillPct = maxPts > 0 ? (driver.points / maxPts) * (isLeader ? 60 : 45) : 0;
-  const posColor = isLeader ? tc : rank <= 3 ? '#dedede' : '#444';
-
+  const fillPct = maxPts > 0 ? (driver.points / maxPts) * 70 : 0;
+  const posClass = rank === 1 ? '#E10600' : rank <= 3 ? '#dedede' : '#444';
   return (
     <div style={{
-      display: 'grid', gridTemplateColumns: '38px 3px 1fr 68px',
+      display: 'grid', gridTemplateColumns: '34px 3px 1fr 60px',
       gap: '10px', alignItems: 'center',
-      padding: isLeader ? '12px 18px 12px 14px' : '9px 18px 9px 14px',
+      padding: '9px 18px 9px 14px',
       borderBottom: '1px solid rgba(255,255,255,.02)',
       position: 'relative', overflow: 'hidden',
-      background: isLeader ? 'rgba(255,255,255,.012)' : 'transparent',
+      transition: 'background .16s',
     }}>
       {/* background fill */}
-      <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${fillPct}%`, background: tc, opacity: isLeader ? .07 : .04, transition: 'width 1.2s cubic-bezier(.16,1,.3,1)' }} />
-      <div style={{
-        fontFamily: "'Barlow Condensed', sans-serif",
-        fontWeight: 900, fontSize: isLeader ? '22px' : '16px',
-        color: posColor, textAlign: 'center', position: 'relative',
-      }}>{rank}</div>
-      <div style={{ height: isLeader ? '32px' : '26px', background: tc, borderRadius: '1px', flexShrink: 0 }} />
+      <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${fillPct}%`, background: tc, opacity: .045, transition: 'width 1.2s cubic-bezier(.16,1,.3,1)' }} />
+      <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 800, fontSize: '16px', color: posClass, textAlign: 'center', position: 'relative' }}>{rank}</div>
+      <div style={{ height: '26px', background: tc, borderRadius: '1px', flexShrink: 0 }} />
       <div style={{ minWidth: 0, position: 'relative' }}>
-        <div style={{
-          fontFamily: "'Barlow Condensed', sans-serif",
-          fontWeight: isLeader ? 800 : 700,
-          fontSize: isLeader ? '16px' : '15px',
-          color: isLeader ? '#fff' : '#ccc',
-          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-        }}>
+        <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '15px', color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {driver.driver_name || driver.driver_id?.toUpperCase()}
         </div>
         <div style={{ fontSize: '9px', color: '#444', marginTop: '1px' }}>{driver.constructor_name}</div>
       </div>
-      <div style={{
-        fontFamily: "'Barlow Condensed', sans-serif",
-        fontWeight: isLeader ? 900 : 800,
-        fontSize: isLeader ? '22px' : '18px',
-        color: isLeader ? '#fff' : '#bbb',
-        textAlign: 'right', lineHeight: 1, position: 'relative',
-      }}>
+      <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 800, fontSize: '18px', color: '#fff', textAlign: 'right', lineHeight: 1, position: 'relative' }}>
         {driver.points}
         <small style={{ display: 'block', fontFamily: "'DM Sans', sans-serif", fontSize: '7px', fontWeight: 400, color: '#444', letterSpacing: '1px', marginTop: '2px' }}>PTS</small>
       </div>
@@ -162,9 +136,7 @@ function ConstructorRow({ team, rank, maxPts }) {
   const abbr = getTeamAbbr(team.constructor_name);
   const fillPct = maxPts > 0 ? (team.points / maxPts) * 45 : 0;
   const barFill = maxPts > 0 ? (team.points / maxPts) * 100 : 0;
-  const isLeader = rank === 1;
-  const posColor = isLeader ? tc : rank <= 3 ? '#dedede' : '#444';
-
+  const posClass = rank === 1 ? '#E10600' : rank <= 3 ? '#dedede' : '#444';
   return (
     <div style={{
       display: 'grid', gridTemplateColumns: '34px 1fr 60px',
@@ -172,23 +144,38 @@ function ConstructorRow({ team, rank, maxPts }) {
       padding: '11px 18px 11px 14px',
       borderBottom: '1px solid rgba(255,255,255,.02)',
       position: 'relative', overflow: 'hidden',
-      background: isLeader ? 'rgba(255,255,255,.012)' : 'transparent',
     }}>
-      <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${fillPct}%`, background: tc, opacity: isLeader ? .075 : .055, transition: 'width 1.3s cubic-bezier(.16,1,.3,1)' }} />
-      <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 800, fontSize: '16px', color: posColor, textAlign: 'center', position: 'relative' }}>{rank}</div>
+      <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${fillPct}%`, background: tc, opacity: .055, transition: 'width 1.3s cubic-bezier(.16,1,.3,1)' }} />
+      <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 800, fontSize: '16px', color: posClass, textAlign: 'center', position: 'relative' }}>{rank}</div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, position: 'relative' }}>
         <div style={{ width: '30px', height: '30px', borderRadius: '2px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: tc, fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 900, fontSize: '9px', color: '#fff', letterSpacing: '.3px' }}>{abbr}</div>
         <div style={{ minWidth: 0, flex: 1 }}>
-          <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: isLeader ? 800 : 700, fontSize: '15px', color: isLeader ? '#fff' : '#ccc' }}>{team.constructor_name}</div>
+          <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '15px', color: '#fff' }}>{team.constructor_name}</div>
           <div style={{ height: '1px', background: 'rgba(255,255,255,.055)', marginTop: '5px', overflow: 'hidden' }}>
             <div style={{ height: '100%', background: tc, width: `${barFill}%`, transition: 'width 1.4s cubic-bezier(.16,1,.3,1)' }} />
           </div>
         </div>
       </div>
-      <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 800, fontSize: '18px', color: isLeader ? '#fff' : '#bbb', textAlign: 'right', lineHeight: 1, position: 'relative' }}>
+      <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 800, fontSize: '18px', color: '#fff', textAlign: 'right', lineHeight: 1, position: 'relative' }}>
         {team.points}
         <small style={{ display: 'block', fontFamily: "'DM Sans', sans-serif", fontSize: '7px', fontWeight: 400, color: '#444', letterSpacing: '1px', marginTop: '2px' }}>PTS</small>
       </div>
+    </div>
+  );
+}
+
+/* ── Section header ── */
+function SectionHeader({ eyebrow, title, meta }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '20px' }}>
+      <div>
+        <div style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '3px', textTransform: 'uppercase', color: '#444', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ width: '14px', height: '1px', background: '#E10600', display: 'inline-block' }} />
+          {eyebrow}
+        </div>
+        <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 900, fontSize: 'clamp(24px, 2.5vw, 36px)', color: '#fff', letterSpacing: '-.5px', lineHeight: 1 }}>{title}</div>
+      </div>
+      {meta && <div style={{ fontSize: '10px', color: '#444', textAlign: 'right', lineHeight: 1.8, fontFamily: "'DM Mono', monospace" }}>{meta}</div>}
     </div>
   );
 }
@@ -211,7 +198,6 @@ export function Home() {
   const modelPick = predictions?.rows?.[0];
   const alpha = predictions?.alpha ?? 0;
   const createdAt = predictions?.created_at ?? null;
-  const pickColor = modelPick ? getTeamColor(modelPick.constructor_id || '') : '#E10600';
 
   const race = calendar?.races?.find(r => r.round === round);
   const raceDate = race?.date || null;
@@ -264,52 +250,20 @@ export function Home() {
             {gpName || 'Formula 1'}<br />Grand Prix
           </div>
 
-          <div style={{ fontSize: '12px', color: '#555', marginBottom: '28px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span style={{ color: '#333' }}>—</span>
+          <div style={{ fontSize: '12px', color: '#888', marginBottom: '32px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ color: '#444' }}>—</span>
             {race?.name || '2026 Season'}
           </div>
 
-          {/* Model pick callout — distinct block instead of inline stat */}
-          {modelPick && (
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: '0',
-              marginBottom: '24px',
-              background: '#0c0c0c',
-              border: '1px solid rgba(255,255,255,.055)',
-              borderLeft: `3px solid ${pickColor}`,
-              borderRadius: '3px',
-              overflow: 'hidden',
-            }}>
-              <div style={{ padding: '14px 20px', flex: 1 }}>
-                <div style={{ fontSize: '8px', letterSpacing: '2.5px', textTransform: 'uppercase', color: '#444', marginBottom: '6px' }}>
-                  Model's P1 prediction
-                </div>
-                <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 900, fontSize: '28px', color: '#fff', lineHeight: 1 }}>
-                  {modelPick.driver_id.replace(/_/g, ' ').toUpperCase()}
-                </div>
-                <div style={{ fontSize: '11px', color: '#555', marginTop: '4px', textTransform: 'capitalize' }}>
-                  {(modelPick.constructor_id || '').replace(/_/g, ' ')}
-                </div>
-              </div>
-              <div style={{ width: '3px', alignSelf: 'stretch', background: pickColor, opacity: .25, flexShrink: 0 }} />
-              <div style={{ padding: '14px 20px', textAlign: 'right' }}>
-                <div style={{ fontSize: '8px', letterSpacing: '2px', textTransform: 'uppercase', color: '#444', marginBottom: '6px' }}>Quali weight</div>
-                <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 900, fontSize: '22px', color: pickColor, lineHeight: 1 }}>
-                  {(alpha * 100).toFixed(0)}%
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* 3 small stats below the callout */}
           <div style={{ display: 'flex', gap: '32px' }}>
             {[
               { val: formatDate(raceDate), lbl: 'Race Date' },
+              { val: modelPick ? modelPick.driver_id.toUpperCase() : '—', lbl: "Model's pick · P1", color: '#27F4D2' },
+              { val: `${(alpha * 100).toFixed(0)}%`, lbl: 'Qualifying weight' },
               { val: formatRelative(createdAt), lbl: 'Prediction freshness' },
-              { val: `R${roundsComplete} done`, lbl: 'Season progress' },
             ].map(item => (
               <div key={item.lbl} style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '16px', color: '#dedede' }}>{item.val}</div>
+                <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '17px', color: item.color || '#dedede' }}>{item.val}</div>
                 <div style={{ fontSize: '9px', letterSpacing: '1.5px', textTransform: 'uppercase', color: '#444' }}>{item.lbl}</div>
               </div>
             ))}
@@ -322,54 +276,30 @@ export function Home() {
 
       {/* ── Stats row ── */}
       <div style={{
-        display: 'grid', gridTemplateColumns: '1fr 1.4fr 1fr 1fr',
+        display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)',
         gap: '1px', background: 'rgba(255,255,255,.055)',
         border: '1px solid rgba(255,255,255,.055)', borderRadius: '3px',
         overflow: 'hidden', marginBottom: '80px',
       }}>
-        <div style={{ background: '#0c0c0c', padding: '22px 24px' }}>
-          <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 900, fontSize: '36px', color: '#fff', lineHeight: 1, letterSpacing: '-1px', marginBottom: '6px' }}>{roundsComplete}</div>
-          <div style={{ fontSize: '9px', letterSpacing: '2px', textTransform: 'uppercase', color: '#444' }}>Races complete</div>
-        </div>
-        {/* Championship leader — wider cell, more visual weight */}
-        <div style={{ background: '#0c0c0c', padding: '22px 24px', borderLeft: topDriver ? `2px solid ${getTeamColor(topDriver.constructor_name)}` : 'none' }}>
-          <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 900, fontSize: '44px', color: topDriver ? getTeamColor(topDriver.constructor_name) : '#fff', lineHeight: 1, letterSpacing: '-1.5px', marginBottom: '4px' }}>
-            {topDriver ? topDriver.points : '—'}
+        {[
+          { val: roundsComplete, lbl: 'Races complete' },
+          { val: topDriver ? `${topDriver.points}` : '—', lbl: topDriver ? `${topDriver.driver_name || topDriver.driver_id} pts` : 'Championship leader', color: '#27F4D2' },
+          { val: topTeam ? `${topTeam.points}` : '—', lbl: topTeam ? `${topTeam.constructor_name} WCC` : 'Constructors leader' },
+          { val: hitRate !== null ? `${(hitRate * 100).toFixed(0)}%` : '—', lbl: 'Model hit rate', color: '#F59E0B' },
+        ].map(s => (
+          <div key={s.lbl} style={{ background: '#0c0c0c', padding: '22px 24px' }}>
+            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 900, fontSize: '36px', color: s.color || '#fff', lineHeight: 1, letterSpacing: '-1px', marginBottom: '6px' }}>{s.val}</div>
+            <div style={{ fontSize: '9px', letterSpacing: '2px', textTransform: 'uppercase', color: '#444' }}>{s.lbl}</div>
           </div>
-          <div style={{ fontSize: '9px', letterSpacing: '2px', textTransform: 'uppercase', color: '#444' }}>
-            {topDriver ? `${topDriver.driver_name || topDriver.driver_id} · pts` : 'Championship leader'}
-          </div>
-        </div>
-        <div style={{ background: '#0c0c0c', padding: '22px 24px' }}>
-          <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 900, fontSize: '36px', color: '#fff', lineHeight: 1, letterSpacing: '-1px', marginBottom: '6px' }}>
-            {topTeam ? `${topTeam.points}` : '—'}
-          </div>
-          <div style={{ fontSize: '9px', letterSpacing: '2px', textTransform: 'uppercase', color: '#444' }}>
-            {topTeam ? `${topTeam.constructor_name} WCC` : 'Constructors leader'}
-          </div>
-        </div>
-        <div style={{ background: '#0c0c0c', padding: '22px 24px' }}>
-          <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 900, fontSize: '36px', color: '#F59E0B', lineHeight: 1, letterSpacing: '-1px', marginBottom: '6px' }}>
-            {hitRate !== null ? `${(hitRate * 100).toFixed(0)}%` : '—'}
-          </div>
-          <div style={{ fontSize: '9px', letterSpacing: '2px', textTransform: 'uppercase', color: '#444' }}>Model hit rate</div>
-        </div>
+        ))}
       </div>
 
-      {/* ── Championship Standings ── editorial header, no red-dash ── */}
-      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '20px' }}>
-        <div>
-          <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 900, fontSize: 'clamp(24px, 2.5vw, 36px)', color: '#fff', letterSpacing: '-.5px', lineHeight: 1 }}>
-            Championship Standings
-          </div>
-          <div style={{ fontSize: '12px', color: '#555', marginTop: '6px' }}>
-            FIA Formula One World Championship · after round {roundsComplete}
-          </div>
-        </div>
-        <div style={{ fontSize: '10px', color: '#444', textAlign: 'right', lineHeight: 1.8, fontFamily: "'DM Mono', monospace" }}>
-          {race?.short || '—'}
-        </div>
-      </div>
+      {/* ── Championship Standings ── */}
+      <SectionHeader
+        eyebrow="FIA Formula One"
+        title="Championship Standings"
+        meta={`After R${roundsComplete} · ${race?.short || '—'}`}
+      />
 
       <div style={{ display: 'grid', gridTemplateColumns: '1.15fr .85fr', gap: '16px', marginBottom: '80px' }}>
         {/* WDC */}
