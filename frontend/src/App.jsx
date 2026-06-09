@@ -88,8 +88,15 @@ function NavBar() {
 export default function App() {
   return (
     <Router>
+      {/* Subtle directional glow — breaks the flat background without overwhelming */}
+      <div style={{
+        position: 'fixed', top: 0, left: '50%', transform: 'translateX(-50%)',
+        width: '100%', maxWidth: '1600px', height: '480px',
+        background: 'radial-gradient(ellipse 70% 55% at 50% -15%, rgba(225,6,0,.055) 0%, transparent 70%)',
+        pointerEvents: 'none', zIndex: 0,
+      }} />
       <NavBar />
-      <main style={{ paddingTop: '52px' }}>
+      <main style={{ paddingTop: '52px', position: 'relative', zIndex: 1 }}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/race" element={<RaceDetail />} />

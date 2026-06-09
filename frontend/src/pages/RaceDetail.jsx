@@ -150,6 +150,8 @@ function PredCol({ title, rows, updatedAt = null, showDelta = false, preRanks = 
     );
   }
 
+  const maxScore = rows[0]?.final_score ?? 1;
+
   return (
     <div style={{ background: '#101010', border: '1px solid rgba(255,255,255,.055)', borderRadius: '3px', overflow: 'hidden' }}>
       <div style={{ padding: '12px 18px', borderBottom: '1px solid rgba(255,255,255,.055)' }}>
@@ -160,37 +162,55 @@ function PredCol({ title, rows, updatedAt = null, showDelta = false, preRanks = 
         const pos = row.finish_position ?? (idx + 1);
         const status = row.status || 'Finished';
         const isOut = status === 'DNF' || status === 'DNS' || status === 'DSQ';
+        const isP1 = pos === 1 && !isOut;
         const tc = getTeamColor(row.constructor_id || row.constructor_name || '');
         const preRank = preRanks[row.driver_id] || 0;
         const delta = showDelta && preRank ? preRank - pos : null;
-        const posColor = isOut ? '#333' : pos === 1 ? '#E10600' : pos <= 3 ? '#dedede' : pos <= 10 ? '#666' : '#333';
-        const rowOpacity = isOut ? 0.5 : status === 'Lapped' ? 0.7 : 1;
+        const posColor = isOut ? '#333' : isP1 ? '#fff' : pos <= 3 ? '#dedede' : pos <= 10 ? '#666' : '#333';
+        const rowOpacity = isOut ? 0.45 : status === 'Lapped' ? 0.7 : 1;
+        const scorePct = maxScore > 0 && row.final_score != null
+          ? Math.min(100, (row.final_score / maxScore) * 60)
+          : (isOut ? 0 : Math.max(0, 60 - (pos - 1) * 3));
 
         return (
           <div key={row.driver_id || idx} style={{
-            display: 'grid', gridTemplateColumns: '34px 3px 1fr auto',
+            display: 'grid', gridTemplateColumns: '36px 3px 1fr auto',
             gap: '8px', alignItems: 'center',
-            padding: '6px 16px',
+            padding: isP1 ? '9px 16px' : '6px 16px',
             borderBottom: '1px solid rgba(255,255,255,.02)',
             opacity: rowOpacity,
+            position: 'relative', overflow: 'hidden',
+            background: isP1 ? 'rgba(255,255,255,.018)' : 'transparent',
           }}>
+            {/* Score bar — proportional to final_score, sits behind everything */}
+            <div style={{
+              position: 'absolute', left: 0, top: 0, bottom: 0,
+              width: `${scorePct}%`, background: tc, opacity: .055,
+              pointerEvents: 'none',
+            }} />
+
             {/* Position or status badge */}
             {isOut ? (
               <StatusBadge status={status} />
             ) : status === 'Lapped' ? (
-              <div style={{ textAlign: 'center' }}>
+              <div style={{ textAlign: 'center', position: 'relative' }}>
                 <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 800, fontSize: '14px', color: posColor }}>{pos}</div>
                 <div style={{ fontSize: '7px', color: '#444', letterSpacing: '1px' }}>LAP</div>
               </div>
             ) : (
-              <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 800, fontSize: '16px', color: posColor, textAlign: 'center' }}>{pos}</div>
+              <div style={{
+                fontFamily: "'Barlow Condensed', sans-serif",
+                fontWeight: isP1 ? 900 : 800,
+                fontSize: isP1 ? '20px' : '16px',
+                color: posColor, textAlign: 'center', position: 'relative',
+              }}>{pos}</div>
             )}
 
-            <div style={{ height: '24px', background: tc, borderRadius: '1px', flexShrink: 0, opacity: isOut ? 0.4 : 1 }} />
+            <div style={{ height: isP1 ? '30px' : '24px', background: tc, borderRadius: '1px', flexShrink: 0, opacity: isOut ? 0.4 : 1, position: 'relative' }} />
 
-            <div>
-              <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '14px', color: isOut ? '#555' : '#fff' }}>
-                {(row.driver_id || row.driver_name || '').toUpperCase()}
+            <div style={{ position: 'relative' }}>
+              <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: isP1 ? 800 : 700, fontSize: isP1 ? '15px' : '14px', color: isOut ? '#555' : '#fff' }}>
+                {(row.driver_id || row.driver_name || '').replace(/_/g, ' ').toUpperCase()}
               </div>
               <div style={{ fontSize: '9px', color: '#333', marginTop: '1px' }}>{row.constructor_id || row.constructor_name || ''}</div>
             </div>
@@ -198,15 +218,14 @@ function PredCol({ title, rows, updatedAt = null, showDelta = false, preRanks = 
             {/* Delta arrow */}
             {delta !== null ? (
               <div style={{
-                fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '14px', textAlign: 'right',
+                fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '14px', textAlign: 'right', position: 'relative',
                 color: delta > 0 ? '#34d058' : delta < 0 ? '#E10600' : '#444',
               }}>
                 {delta > 0 ? `↑${delta}` : delta < 0 ? `↓${Math.abs(delta)}` : '—'}
               </div>
             ) : (
-              /* Points for actual result column */
               row.points > 0 ? (
-                <div style={{ fontSize: '10px', color: '#444', textAlign: 'right', fontFamily: "'DM Mono', monospace" }}>
+                <div style={{ fontSize: '10px', color: '#444', textAlign: 'right', fontFamily: "'DM Mono', monospace", position: 'relative' }}>
                   +{row.points}
                 </div>
               ) : null
