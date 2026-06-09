@@ -1,0 +1,70 @@
+[
+  {
+    "name": "grid_position",
+    "type": "feature"
+  },
+  {
+    "name": "current_points",
+    "type": "feature"
+  },
+  {
+    "name": "avg_points_per_race",
+    "type": "feature"
+  },
+  {
+    "name": "avg_finish_position",
+    "type": "feature"
+  },
+  {
+    "name": "races_completed",
+    "type": "feature"
+  },
+  {
+    "name": "wins",
+    "type": "feature"
+  },
+  {
+    "name": "podiums",
+    "type": "feature"
+  },
+  {
+    "name": "poles",
+    "type": "feature"
+  },
+  {
+    "name": "recent_top3_rate",
+    "type": "feature"
+  },
+  {
+    "name": "last_race_finish",
+    "type": "feature"
+  },
+  {
+    "name": "last_race_points",
+    "type": "feature"
+  },
+  {
+    "name": "momentum",
+    "type": "feature"
+  },
+  {
+    "name": "constructor_avg_finish",
+    "type": "feature"
+  },
+  {
+    "name": "constructor_avg_points",
+    "type": "feature"
+  },
+  {
+    "name": "season_weight",
+    "type": "feature"
+  },
+  {
+    "name": "finish_position",
+    "type": "target"
+  },
+  {
+    "name": "points",
+    "type": "target"
+  }
+]

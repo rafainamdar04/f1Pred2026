@@ -1,0 +1,49 @@
+name: Refresh demo data
+
+# Runs the F1 pipeline on a schedule and commits the regenerated static API
+# snapshot. The commit triggers the static host (Vercel/Netlify) to redeploy,
+# so the live demo stays current without an always-on backend.
+
+on:
+  schedule:
+    - cron: "0 6 * * *"        # daily at 06:00 UTC
+  workflow_dispatch: {}         # manual "Run workflow" button
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-demo
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run pipeline + snapshot API
+        run: python scripts/refresh_demo.py
+
+      - name: Commit refreshed snapshot
+        run: |
+          git config user.name "demo-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add frontend/public/api
+          if git diff --cached --quiet; then
+            echo "No snapshot changes to commit."
+          else
+            git commit -m "chore: refresh demo snapshot ($(date -u +%FT%TZ))"
+            git push
+          fi

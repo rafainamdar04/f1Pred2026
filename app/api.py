@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import subprocess
 import sys
@@ -38,6 +39,7 @@ from config.settings import (
     ADMIN_API_KEY,
     ALLOWED_ORIGINS,
     CURRENT_SEASON,
+    ENV,
     PATHS,
     PIPELINE_TIMEOUT_SECONDS,
     SCHEDULER_ENABLED,
@@ -315,7 +317,14 @@ def _race_for_round(round_num: int) -> dict[str, Any] | None:
 
 
 def _guard_not_before_appointed(round_num: int, mode: str) -> None:
-    """Block serving a prediction before its appointed publication time."""
+    """Block serving a prediction before its appointed publication time.
+    
+    Skipped in development mode to allow testing without waiting for appointment times.
+    """
+    # Allow all access in development
+    if ENV == "development":
+        return
+    
     race = _race_for_round(round_num)
     if race is None:
         return
@@ -619,7 +628,22 @@ def get_sprint_calendar() -> dict:
 
 
 def _next_race_round() -> int:
-    """Return the round number of the latest prequali file — this is always the active race week."""
+    """Return the round number of the next upcoming race (not yet completed).
+    
+    Finds the first race where race_end_utc is in the future, ensuring we don't
+    show past races even if their predictions files are the latest available.
+    Falls back to latest prequali file if no upcoming race is found.
+    """
+    now = datetime.now(timezone.utc)
+    calendar = _get_calendar()
+    
+    # Find first race that hasn't ended yet
+    for race in calendar:
+        race_end = _parse_iso_utc(race.get("race_end_utc"))
+        if race_end and race_end > now:
+            return int(race.get("round", 0))
+    
+    # Fallback: return latest prequali prediction file round
     path = _latest_prediction_path("prequali")
     return int(re.search(r"round_(\d+)_", path.name).group(1))
 
@@ -644,10 +668,12 @@ def get_next_predictions() -> dict:
 
 @app.get("/api/predictions/next/prequali")
 def get_next_prequali_predictions() -> dict:
-    latest_path = _latest_prediction_path("prequali")
-    round_num = int(re.search(r"round_(\d+)_", latest_path.name).group(1))
+    round_num = _next_race_round()
     _guard_not_before_appointed(round_num, "prequali")
-    predictions = _load_prequali_predictions(latest_path)
+    path = _prediction_path(round_num, "prequali")
+    if not path.exists():
+        raise HTTPException(status_code=404, detail=f"No prequali predictions yet for round {round_num}")
+    predictions = _load_prequali_predictions(path)
     return _inject_prediction_created_at(predictions.model_dump(), "pre")
 
 

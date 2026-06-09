@@ -1,0 +1,23 @@
+driver_id,driver_code,driver_name,constructor_id,constructor_name,points,driver_number,wins,podiums,position
+antonelli,ANT,Kimi Antonelli,mercedes,Mercedes,131.0,12,4,5,1
+russell,RUS,George Russell,mercedes,Mercedes,88.0,63,1,2,2
+leclerc,LEC,Charles Leclerc,ferrari,Ferrari,75.0,16,0,2,3
+hamilton,HAM,Lewis Hamilton,ferrari,Ferrari,72.0,44,0,2,4
+norris,NOR,Lando Norris,mclaren,McLaren,58.0,1,0,1,5
+piastri,PIA,Oscar Piastri,mclaren,McLaren,48.0,81,0,2,6
+max_verstappen,VER,Max Verstappen,red_bull,Red Bull Racing,43.0,3,0,1,7
+gasly,GAS,Pierre Gasly,alpine,Alpine,20.0,10,0,0,8
+bearman,BEA,Oliver Bearman,haas,Haas F1 Team,18.0,87,0,0,9
+lawson,LAW,Liam Lawson,rb,Racing Bulls,16.0,30,0,0,10
+colapinto,COL,Franco Colapinto,alpine,Alpine,15.0,43,0,0,11
+hadjar,HAD,Isack Hadjar,red_bull,Red Bull Racing,14.0,6,0,0,12
+sainz,SAI,Carlos Sainz,williams,Williams,6.0,55,0,0,13
+arvid_lindblad,LIN,Arvid Lindblad,rb,Racing Bulls,5.0,41,0,0,14
+bortoleto,BOR,Gabriel Bortoleto,audi,Audi,2.0,5,0,0,15
+albon,ALB,Alexander Albon,williams,Williams,1.0,23,0,0,16
+ocon,OCO,Esteban Ocon,haas,Haas F1 Team,1.0,31,0,0,17
+alonso,ALO,Fernando Alonso,aston_martin,Aston Martin,0.0,14,0,0,18
+hulkenberg,HUL,Nico Hulkenberg,audi,Audi,0.0,27,0,0,19
+bottas,BOT,Valtteri Bottas,cadillac,Cadillac,0.0,77,0,0,20
+perez,PER,Sergio Perez,cadillac,Cadillac,0.0,11,0,0,21
+stroll,STR,Lance Stroll,aston_martin,Aston Martin,0.0,18,0,0,22

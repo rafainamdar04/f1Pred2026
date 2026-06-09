@@ -1,0 +1,199 @@
+driver_number,driver_code,driver_name,driver_id,constructor_name,constructor_id,grid_position,finish_position,classified_position,points,status,season,round,race_name,circuit_id,circuit_name,source,session_type
+63,RUS,George Russell,russell,Mercedes,mercedes,1.0,1.0,1,25.0,Finished,2026,1,Australian Grand Prix,,,fastf1,R
+12,ANT,Kimi Antonelli,antonelli,Mercedes,mercedes,2.0,2.0,2,18.0,Finished,2026,1,Australian Grand Prix,,,fastf1,R
+16,LEC,Charles Leclerc,leclerc,Ferrari,ferrari,4.0,3.0,3,15.0,Finished,2026,1,Australian Grand Prix,,,fastf1,R
+44,HAM,Lewis Hamilton,hamilton,Ferrari,ferrari,7.0,4.0,4,12.0,Finished,2026,1,Australian Grand Prix,,,fastf1,R
+1,NOR,Lando Norris,norris,McLaren,mclaren,6.0,5.0,5,10.0,Finished,2026,1,Australian Grand Prix,,,fastf1,R
+3,VER,Max Verstappen,max_verstappen,Red Bull Racing,red_bull,20.0,6.0,6,8.0,Finished,2026,1,Australian Grand Prix,,,fastf1,R
+87,BEA,Oliver Bearman,bearman,Haas F1 Team,haas,12.0,7.0,7,6.0,Lapped,2026,1,Australian Grand Prix,,,fastf1,R
+41,LIN,Arvid Lindblad,arvid_lindblad,Racing Bulls,rb,9.0,8.0,8,4.0,Lapped,2026,1,Australian Grand Prix,,,fastf1,R
+5,BOR,Gabriel Bortoleto,bortoleto,Audi,audi,10.0,9.0,9,2.0,Lapped,2026,1,Australian Grand Prix,,,fastf1,R
+10,GAS,Pierre Gasly,gasly,Alpine,alpine,14.0,10.0,10,1.0,Lapped,2026,1,Australian Grand Prix,,,fastf1,R
+31,OCO,Esteban Ocon,ocon,Haas F1 Team,haas,13.0,11.0,11,0.0,Lapped,2026,1,Australian Grand Prix,,,fastf1,R
+23,ALB,Alexander Albon,albon,Williams,williams,15.0,12.0,12,0.0,Lapped,2026,1,Australian Grand Prix,,,fastf1,R
+30,LAW,Liam Lawson,lawson,Racing Bulls,rb,8.0,13.0,13,0.0,Lapped,2026,1,Australian Grand Prix,,,fastf1,R
+43,COL,Franco Colapinto,colapinto,Alpine,alpine,16.0,14.0,14,0.0,Lapped,2026,1,Australian Grand Prix,,,fastf1,R
+55,SAI,Carlos Sainz,sainz,Williams,williams,21.0,15.0,15,0.0,Lapped,2026,1,Australian Grand Prix,,,fastf1,R
+11,PER,Sergio Perez,perez,Cadillac,cadillac,18.0,16.0,16,0.0,Lapped,2026,1,Australian Grand Prix,,,fastf1,R
+18,STR,Lance Stroll,stroll,Aston Martin,aston_martin,22.0,17.0,R,0.0,Lapped,2026,1,Australian Grand Prix,,,fastf1,R
+14,ALO,Fernando Alonso,alonso,Aston Martin,aston_martin,17.0,18.0,R,0.0,Retired,2026,1,Australian Grand Prix,,,fastf1,R
+77,BOT,Valtteri Bottas,bottas,Cadillac,cadillac,19.0,19.0,R,0.0,Retired,2026,1,Australian Grand Prix,,,fastf1,R
+6,HAD,Isack Hadjar,hadjar,Red Bull Racing,red_bull,3.0,20.0,R,0.0,Retired,2026,1,Australian Grand Prix,,,fastf1,R
+81,PIA,Oscar Piastri,piastri,McLaren,mclaren,5.0,21.0,W,0.0,Did not start,2026,1,Australian Grand Prix,,,fastf1,R
+27,HUL,Nico Hulkenberg,hulkenberg,Audi,audi,11.0,22.0,W,0.0,Did not start,2026,1,Australian Grand Prix,,,fastf1,R
+63,RUS,George Russell,russell,Mercedes,mercedes,1.0,1.0,1,8.0,Finished,2026,2,Chinese Grand Prix,,,fastf1,S
+16,LEC,Charles Leclerc,leclerc,Ferrari,ferrari,6.0,2.0,2,7.0,Finished,2026,2,Chinese Grand Prix,,,fastf1,S
+44,HAM,Lewis Hamilton,hamilton,Ferrari,ferrari,4.0,3.0,3,6.0,Finished,2026,2,Chinese Grand Prix,,,fastf1,S
+1,NOR,Lando Norris,norris,McLaren,mclaren,3.0,4.0,4,5.0,Finished,2026,2,Chinese Grand Prix,,,fastf1,S
+12,ANT,Kimi Antonelli,antonelli,Mercedes,mercedes,2.0,5.0,5,4.0,Finished,2026,2,Chinese Grand Prix,,,fastf1,S
+81,PIA,Oscar Piastri,piastri,McLaren,mclaren,5.0,6.0,6,3.0,Finished,2026,2,Chinese Grand Prix,,,fastf1,S
+30,LAW,Liam Lawson,lawson,Racing Bulls,rb,13.0,7.0,7,2.0,Finished,2026,2,Chinese Grand Prix,,,fastf1,S
+87,BEA,Oliver Bearman,bearman,Haas F1 Team,haas,9.0,8.0,8,1.0,Finished,2026,2,Chinese Grand Prix,,,fastf1,S
+3,VER,Max Verstappen,max_verstappen,Red Bull Racing,red_bull,8.0,9.0,9,0.0,Finished,2026,2,Chinese Grand Prix,,,fastf1,S
+31,OCO,Esteban Ocon,ocon,Haas F1 Team,haas,12.0,10.0,10,0.0,Finished,2026,2,Chinese Grand Prix,,,fastf1,S
+10,GAS,Pierre Gasly,gasly,Alpine,alpine,7.0,11.0,11,0.0,Finished,2026,2,Chinese Grand Prix,,,fastf1,S
+55,SAI,Carlos Sainz,sainz,Williams,williams,17.0,12.0,12,0.0,Finished,2026,2,Chinese Grand Prix,,,fastf1,S
+5,BOR,Gabriel Bortoleto,bortoleto,Audi,audi,14.0,13.0,13,0.0,Finished,2026,2,Chinese Grand Prix,,,fastf1,S
+43,COL,Franco Colapinto,colapinto,Alpine,alpine,16.0,14.0,14,0.0,Finished,2026,2,Chinese Grand Prix,,,fastf1,S
+6,HAD,Isack Hadjar,hadjar,Red Bull Racing,red_bull,10.0,15.0,15,0.0,Finished,2026,2,Chinese Grand Prix,,,fastf1,S
+23,ALB,Alexander Albon,albon,Williams,williams,22.0,16.0,16,0.0,Finished,2026,2,Chinese Grand Prix,,,fastf1,S
+14,ALO,Fernando Alonso,alonso,Aston Martin,aston_martin,18.0,17.0,17,0.0,Finished,2026,2,Chinese Grand Prix,,,fastf1,S
+18,STR,Lance Stroll,stroll,Aston Martin,aston_martin,19.0,18.0,18,0.0,Finished,2026,2,Chinese Grand Prix,,,fastf1,S
+11,PER,Sergio Perez,perez,Cadillac,cadillac,21.0,19.0,19,0.0,Finished,2026,2,Chinese Grand Prix,,,fastf1,S
+27,HUL,Nico Hulkenberg,hulkenberg,Audi,audi,11.0,20.0,R,0.0,Retired,2026,2,Chinese Grand Prix,,,fastf1,S
+77,BOT,Valtteri Bottas,bottas,Cadillac,cadillac,20.0,21.0,R,0.0,Retired,2026,2,Chinese Grand Prix,,,fastf1,S
+41,LIN,Arvid Lindblad,arvid_lindblad,Racing Bulls,rb,15.0,22.0,R,0.0,Retired,2026,2,Chinese Grand Prix,,,fastf1,S
+12,ANT,Kimi Antonelli,antonelli,Mercedes,mercedes,1.0,1.0,1,25.0,Finished,2026,2,Chinese Grand Prix,,,fastf1,R
+63,RUS,George Russell,russell,Mercedes,mercedes,2.0,2.0,2,18.0,Finished,2026,2,Chinese Grand Prix,,,fastf1,R
+44,HAM,Lewis Hamilton,hamilton,Ferrari,ferrari,3.0,3.0,3,15.0,Finished,2026,2,Chinese Grand Prix,,,fastf1,R
+16,LEC,Charles Leclerc,leclerc,Ferrari,ferrari,4.0,4.0,4,12.0,Finished,2026,2,Chinese Grand Prix,,,fastf1,R
+87,BEA,Oliver Bearman,bearman,Haas F1 Team,haas,10.0,5.0,5,10.0,Finished,2026,2,Chinese Grand Prix,,,fastf1,R
+10,GAS,Pierre Gasly,gasly,Alpine,alpine,7.0,6.0,6,8.0,Finished,2026,2,Chinese Grand Prix,,,fastf1,R
+30,LAW,Liam Lawson,lawson,Racing Bulls,rb,14.0,7.0,7,6.0,Finished,2026,2,Chinese Grand Prix,,,fastf1,R
+6,HAD,Isack Hadjar,hadjar,Red Bull Racing,red_bull,9.0,8.0,8,4.0,Finished,2026,2,Chinese Grand Prix,,,fastf1,R
+55,SAI,Carlos Sainz,sainz,Williams,williams,17.0,9.0,9,2.0,Lapped,2026,2,Chinese Grand Prix,,,fastf1,R
+43,COL,Franco Colapinto,colapinto,Alpine,alpine,12.0,10.0,10,1.0,Lapped,2026,2,Chinese Grand Prix,,,fastf1,R
+27,HUL,Nico Hulkenberg,hulkenberg,Audi,audi,11.0,11.0,11,0.0,Lapped,2026,2,Chinese Grand Prix,,,fastf1,R
+41,LIN,Arvid Lindblad,arvid_lindblad,Racing Bulls,rb,15.0,12.0,12,0.0,Lapped,2026,2,Chinese Grand Prix,,,fastf1,R
+77,BOT,Valtteri Bottas,bottas,Cadillac,cadillac,19.0,13.0,13,0.0,Lapped,2026,2,Chinese Grand Prix,,,fastf1,R
+31,OCO,Esteban Ocon,ocon,Haas F1 Team,haas,13.0,14.0,14,0.0,Lapped,2026,2,Chinese Grand Prix,,,fastf1,R
+11,PER,Sergio Perez,perez,Cadillac,cadillac,21.0,15.0,15,0.0,Lapped,2026,2,Chinese Grand Prix,,,fastf1,R
+3,VER,Max Verstappen,max_verstappen,Red Bull Racing,red_bull,8.0,16.0,R,0.0,Retired,2026,2,Chinese Grand Prix,,,fastf1,R
+14,ALO,Fernando Alonso,alonso,Aston Martin,aston_martin,18.0,17.0,R,0.0,Retired,2026,2,Chinese Grand Prix,,,fastf1,R
+18,STR,Lance Stroll,stroll,Aston Martin,aston_martin,20.0,18.0,R,0.0,Retired,2026,2,Chinese Grand Prix,,,fastf1,R
+81,PIA,Oscar Piastri,piastri,McLaren,mclaren,5.0,19.0,W,0.0,Did not start,2026,2,Chinese Grand Prix,,,fastf1,R
+1,NOR,Lando Norris,norris,McLaren,mclaren,6.0,20.0,W,0.0,Did not start,2026,2,Chinese Grand Prix,,,fastf1,R
+5,BOR,Gabriel Bortoleto,bortoleto,Audi,audi,16.0,21.0,W,0.0,Did not start,2026,2,Chinese Grand Prix,,,fastf1,R
+23,ALB,Alexander Albon,albon,Williams,williams,22.0,22.0,W,0.0,Did not start,2026,2,Chinese Grand Prix,,,fastf1,R
+12,ANT,Kimi Antonelli,antonelli,Mercedes,mercedes,1.0,1.0,1,25.0,Finished,2026,3,Japanese Grand Prix,,,fastf1,R
+81,PIA,Oscar Piastri,piastri,McLaren,mclaren,3.0,2.0,2,18.0,Finished,2026,3,Japanese Grand Prix,,,fastf1,R
+16,LEC,Charles Leclerc,leclerc,Ferrari,ferrari,4.0,3.0,3,15.0,Finished,2026,3,Japanese Grand Prix,,,fastf1,R
+63,RUS,George Russell,russell,Mercedes,mercedes,2.0,4.0,4,12.0,Finished,2026,3,Japanese Grand Prix,,,fastf1,R
+1,NOR,Lando Norris,norris,McLaren,mclaren,5.0,5.0,5,10.0,Finished,2026,3,Japanese Grand Prix,,,fastf1,R
+44,HAM,Lewis Hamilton,hamilton,Ferrari,ferrari,6.0,6.0,6,8.0,Finished,2026,3,Japanese Grand Prix,,,fastf1,R
+10,GAS,Pierre Gasly,gasly,Alpine,alpine,7.0,7.0,7,6.0,Finished,2026,3,Japanese Grand Prix,,,fastf1,R
+3,VER,Max Verstappen,max_verstappen,Red Bull Racing,red_bull,11.0,8.0,8,4.0,Finished,2026,3,Japanese Grand Prix,,,fastf1,R
+30,LAW,Liam Lawson,lawson,Racing Bulls,rb,14.0,9.0,9,2.0,Finished,2026,3,Japanese Grand Prix,,,fastf1,R
+31,OCO,Esteban Ocon,ocon,Haas F1 Team,haas,12.0,10.0,10,1.0,Finished,2026,3,Japanese Grand Prix,,,fastf1,R
+27,HUL,Nico Hulkenberg,hulkenberg,Audi,audi,13.0,11.0,11,0.0,Finished,2026,3,Japanese Grand Prix,,,fastf1,R
+6,HAD,Isack Hadjar,hadjar,Red Bull Racing,red_bull,8.0,12.0,12,0.0,Finished,2026,3,Japanese Grand Prix,,,fastf1,R
+5,BOR,Gabriel Bortoleto,bortoleto,Audi,audi,9.0,13.0,13,0.0,Finished,2026,3,Japanese Grand Prix,,,fastf1,R
+41,LIN,Arvid Lindblad,arvid_lindblad,Racing Bulls,rb,10.0,14.0,14,0.0,Finished,2026,3,Japanese Grand Prix,,,fastf1,R
+55,SAI,Carlos Sainz,sainz,Williams,williams,16.0,15.0,15,0.0,Finished,2026,3,Japanese Grand Prix,,,fastf1,R
+43,COL,Franco Colapinto,colapinto,Alpine,alpine,15.0,16.0,16,0.0,Finished,2026,3,Japanese Grand Prix,,,fastf1,R
+11,PER,Sergio Perez,perez,Cadillac,cadillac,19.0,17.0,17,0.0,Finished,2026,3,Japanese Grand Prix,,,fastf1,R
+14,ALO,Fernando Alonso,alonso,Aston Martin,aston_martin,21.0,18.0,18,0.0,Lapped,2026,3,Japanese Grand Prix,,,fastf1,R
+77,BOT,Valtteri Bottas,bottas,Cadillac,cadillac,20.0,19.0,19,0.0,Lapped,2026,3,Japanese Grand Prix,,,fastf1,R
+23,ALB,Alexander Albon,albon,Williams,williams,17.0,20.0,20,0.0,Lapped,2026,3,Japanese Grand Prix,,,fastf1,R
+18,STR,Lance Stroll,stroll,Aston Martin,aston_martin,22.0,21.0,R,0.0,Retired,2026,3,Japanese Grand Prix,,,fastf1,R
+87,BEA,Oliver Bearman,bearman,Haas F1 Team,haas,18.0,22.0,R,0.0,Retired,2026,3,Japanese Grand Prix,,,fastf1,R
+1,NOR,Lando Norris,norris,McLaren,mclaren,1.0,1.0,1,8.0,Finished,2026,4,Miami Grand Prix,,,fastf1,S
+81,PIA,Oscar Piastri,piastri,McLaren,mclaren,3.0,2.0,2,7.0,Finished,2026,4,Miami Grand Prix,,,fastf1,S
+16,LEC,Charles Leclerc,leclerc,Ferrari,ferrari,4.0,3.0,3,6.0,Finished,2026,4,Miami Grand Prix,,,fastf1,S
+63,RUS,George Russell,russell,Mercedes,mercedes,6.0,4.0,4,5.0,Finished,2026,4,Miami Grand Prix,,,fastf1,S
+3,VER,Max Verstappen,max_verstappen,Red Bull Racing,red_bull,5.0,5.0,5,4.0,Finished,2026,4,Miami Grand Prix,,,fastf1,S
+12,ANT,Kimi Antonelli,antonelli,Mercedes,mercedes,2.0,6.0,6,3.0,Finished,2026,4,Miami Grand Prix,,,fastf1,S
+44,HAM,Lewis Hamilton,hamilton,Ferrari,ferrari,7.0,7.0,7,2.0,Finished,2026,4,Miami Grand Prix,,,fastf1,S
+10,GAS,Pierre Gasly,gasly,Alpine,alpine,10.0,8.0,8,1.0,Finished,2026,4,Miami Grand Prix,,,fastf1,S
+6,HAD,Isack Hadjar,hadjar,Red Bull Racing,red_bull,9.0,9.0,9,0.0,Finished,2026,4,Miami Grand Prix,,,fastf1,S
+43,COL,Franco Colapinto,colapinto,Alpine,alpine,8.0,10.0,10,0.0,Finished,2026,4,Miami Grand Prix,,,fastf1,S
+31,OCO,Esteban Ocon,ocon,Haas F1 Team,haas,16.0,11.0,11,0.0,Finished,2026,4,Miami Grand Prix,,,fastf1,S
+87,BEA,Oliver Bearman,bearman,Haas F1 Team,haas,13.0,12.0,12,0.0,Finished,2026,4,Miami Grand Prix,,,fastf1,S
+55,SAI,Carlos Sainz,sainz,Williams,williams,14.0,13.0,13,0.0,Finished,2026,4,Miami Grand Prix,,,fastf1,S
+30,LAW,Liam Lawson,lawson,Racing Bulls,rb,15.0,14.0,14,0.0,Finished,2026,4,Miami Grand Prix,,,fastf1,S
+14,ALO,Fernando Alonso,alonso,Aston Martin,aston_martin,20.0,15.0,15,0.0,Finished,2026,4,Miami Grand Prix,,,fastf1,S
+11,PER,Sergio Perez,perez,Cadillac,cadillac,17.0,16.0,16,0.0,Finished,2026,4,Miami Grand Prix,,,fastf1,S
+18,STR,Lance Stroll,stroll,Aston Martin,aston_martin,21.0,17.0,17,0.0,Finished,2026,4,Miami Grand Prix,,,fastf1,S
+23,ALB,Alexander Albon,albon,Williams,williams,18.0,18.0,18,0.0,Finished,2026,4,Miami Grand Prix,,,fastf1,S
+77,BOT,Valtteri Bottas,bottas,Cadillac,cadillac,19.0,19.0,19,0.0,Finished,2026,4,Miami Grand Prix,,,fastf1,S
+27,HUL,Nico Hulkenberg,hulkenberg,Audi,audi,12.0,20.0,W,0.0,Did not start,2026,4,Miami Grand Prix,,,fastf1,S
+41,LIN,Arvid Lindblad,arvid_lindblad,Racing Bulls,rb,22.0,21.0,W,0.0,Did not start,2026,4,Miami Grand Prix,,,fastf1,S
+5,BOR,Gabriel Bortoleto,bortoleto,Audi,audi,11.0,22.0,D,0.0,Disqualified,2026,4,Miami Grand Prix,,,fastf1,S
+12,ANT,Kimi Antonelli,antonelli,Mercedes,mercedes,1.0,1.0,1,25.0,Finished,2026,4,Miami Grand Prix,,,fastf1,R
+1,NOR,Lando Norris,norris,McLaren,mclaren,4.0,2.0,2,18.0,Finished,2026,4,Miami Grand Prix,,,fastf1,R
+81,PIA,Oscar Piastri,piastri,McLaren,mclaren,7.0,3.0,3,15.0,Finished,2026,4,Miami Grand Prix,,,fastf1,R
+63,RUS,George Russell,russell,Mercedes,mercedes,5.0,4.0,4,12.0,Finished,2026,4,Miami Grand Prix,,,fastf1,R
+3,VER,Max Verstappen,max_verstappen,Red Bull Racing,red_bull,2.0,5.0,5,10.0,Finished,2026,4,Miami Grand Prix,,,fastf1,R
+44,HAM,Lewis Hamilton,hamilton,Ferrari,ferrari,6.0,6.0,6,8.0,Finished,2026,4,Miami Grand Prix,,,fastf1,R
+43,COL,Franco Colapinto,colapinto,Alpine,alpine,8.0,7.0,7,6.0,Finished,2026,4,Miami Grand Prix,,,fastf1,R
+16,LEC,Charles Leclerc,leclerc,Ferrari,ferrari,3.0,8.0,8,4.0,Finished,2026,4,Miami Grand Prix,,,fastf1,R
+55,SAI,Carlos Sainz,sainz,Williams,williams,13.0,9.0,9,2.0,Finished,2026,4,Miami Grand Prix,,,fastf1,R
+23,ALB,Alexander Albon,albon,Williams,williams,15.0,10.0,10,1.0,Finished,2026,4,Miami Grand Prix,,,fastf1,R
+87,BEA,Oliver Bearman,bearman,Haas F1 Team,haas,12.0,11.0,11,0.0,Lapped,2026,4,Miami Grand Prix,,,fastf1,R
+5,BOR,Gabriel Bortoleto,bortoleto,Audi,audi,21.0,12.0,12,0.0,Lapped,2026,4,Miami Grand Prix,,,fastf1,R
+31,OCO,Esteban Ocon,ocon,Haas F1 Team,haas,14.0,13.0,13,0.0,Lapped,2026,4,Miami Grand Prix,,,fastf1,R
+41,LIN,Arvid Lindblad,arvid_lindblad,Racing Bulls,rb,16.0,14.0,14,0.0,Lapped,2026,4,Miami Grand Prix,,,fastf1,R
+14,ALO,Fernando Alonso,alonso,Aston Martin,aston_martin,17.0,15.0,15,0.0,Lapped,2026,4,Miami Grand Prix,,,fastf1,R
+11,PER,Sergio Perez,perez,Cadillac,cadillac,20.0,16.0,16,0.0,Lapped,2026,4,Miami Grand Prix,,,fastf1,R
+18,STR,Lance Stroll,stroll,Aston Martin,aston_martin,18.0,17.0,17,0.0,Lapped,2026,4,Miami Grand Prix,,,fastf1,R
+77,BOT,Valtteri Bottas,bottas,Cadillac,cadillac,19.0,18.0,18,0.0,Lapped,2026,4,Miami Grand Prix,,,fastf1,R
+27,HUL,Nico Hulkenberg,hulkenberg,Audi,audi,10.0,19.0,R,0.0,Retired,2026,4,Miami Grand Prix,,,fastf1,R
+30,LAW,Liam Lawson,lawson,Racing Bulls,rb,11.0,20.0,R,0.0,Retired,2026,4,Miami Grand Prix,,,fastf1,R
+10,GAS,Pierre Gasly,gasly,Alpine,alpine,9.0,21.0,R,0.0,Retired,2026,4,Miami Grand Prix,,,fastf1,R
+6,HAD,Isack Hadjar,hadjar,Red Bull Racing,red_bull,22.0,22.0,R,0.0,Retired,2026,4,Miami Grand Prix,,,fastf1,R
+63,RUS,George Russell,russell,Mercedes,mercedes,1.0,1.0,1,8.0,Finished,2026,5,Canadian Grand Prix,,,fastf1,S
+1,NOR,Lando Norris,norris,McLaren,mclaren,3.0,2.0,2,7.0,Finished,2026,5,Canadian Grand Prix,,,fastf1,S
+12,ANT,Kimi Antonelli,antonelli,Mercedes,mercedes,2.0,3.0,3,6.0,Finished,2026,5,Canadian Grand Prix,,,fastf1,S
+81,PIA,Oscar Piastri,piastri,McLaren,mclaren,4.0,4.0,4,5.0,Finished,2026,5,Canadian Grand Prix,,,fastf1,S
+16,LEC,Charles Leclerc,leclerc,Ferrari,ferrari,6.0,5.0,5,4.0,Finished,2026,5,Canadian Grand Prix,,,fastf1,S
+44,HAM,Lewis Hamilton,hamilton,Ferrari,ferrari,5.0,6.0,6,3.0,Finished,2026,5,Canadian Grand Prix,,,fastf1,S
+3,VER,Max Verstappen,max_verstappen,Red Bull Racing,red_bull,7.0,7.0,7,2.0,Finished,2026,5,Canadian Grand Prix,,,fastf1,S
+41,LIN,Arvid Lindblad,arvid_lindblad,Racing Bulls,rb,9.0,8.0,8,1.0,Finished,2026,5,Canadian Grand Prix,,,fastf1,S
+43,COL,Franco Colapinto,colapinto,Alpine,alpine,13.0,9.0,9,0.0,Finished,2026,5,Canadian Grand Prix,,,fastf1,S
+55,SAI,Carlos Sainz,sainz,Williams,williams,10.0,10.0,10,0.0,Finished,2026,5,Canadian Grand Prix,,,fastf1,S
+30,LAW,Liam Lawson,lawson,Racing Bulls,rb,18.0,11.0,11,0.0,Finished,2026,5,Canadian Grand Prix,,,fastf1,S
+5,BOR,Gabriel Bortoleto,bortoleto,Audi,audi,12.0,12.0,12,0.0,Finished,2026,5,Canadian Grand Prix,,,fastf1,S
+31,OCO,Esteban Ocon,ocon,Haas F1 Team,haas,14.0,13.0,13,0.0,Finished,2026,5,Canadian Grand Prix,,,fastf1,S
+11,PER,Sergio Perez,perez,Cadillac,cadillac,16.0,14.0,14,0.0,Finished,2026,5,Canadian Grand Prix,,,fastf1,S
+27,HUL,Nico Hulkenberg,hulkenberg,Audi,audi,11.0,15.0,15,0.0,Finished,2026,5,Canadian Grand Prix,,,fastf1,S
+18,STR,Lance Stroll,stroll,Aston Martin,aston_martin,17.0,16.0,16,0.0,Lapped,2026,5,Canadian Grand Prix,,,fastf1,S
+77,BOT,Valtteri Bottas,bottas,Cadillac,cadillac,21.0,17.0,17,0.0,Lapped,2026,5,Canadian Grand Prix,,,fastf1,S
+87,BEA,Oliver Bearman,bearman,Haas F1 Team,haas,19.0,18.0,18,0.0,Lapped,2026,5,Canadian Grand Prix,,,fastf1,S
+23,ALB,Alexander Albon,albon,Williams,williams,22.0,19.0,19,0.0,Lapped,2026,5,Canadian Grand Prix,,,fastf1,S
+10,GAS,Pierre Gasly,gasly,Alpine,alpine,20.0,20.0,20,0.0,Lapped,2026,5,Canadian Grand Prix,,,fastf1,S
+6,HAD,Isack Hadjar,hadjar,Red Bull Racing,red_bull,8.0,21.0,21,0.0,Lapped,2026,5,Canadian Grand Prix,,,fastf1,S
+14,ALO,Fernando Alonso,alonso,Aston Martin,aston_martin,15.0,22.0,R,0.0,Retired,2026,5,Canadian Grand Prix,,,fastf1,S
+12,ANT,Kimi Antonelli,antonelli,Mercedes,mercedes,2.0,1.0,1,25.0,Finished,2026,5,Canadian Grand Prix,,,fastf1,R
+44,HAM,Lewis Hamilton,hamilton,Ferrari,ferrari,5.0,2.0,2,18.0,Finished,2026,5,Canadian Grand Prix,,,fastf1,R
+3,VER,Max Verstappen,max_verstappen,Red Bull Racing,red_bull,6.0,3.0,3,15.0,Finished,2026,5,Canadian Grand Prix,,,fastf1,R
+16,LEC,Charles Leclerc,leclerc,Ferrari,ferrari,8.0,4.0,4,12.0,Finished,2026,5,Canadian Grand Prix,,,fastf1,R
+6,HAD,Isack Hadjar,hadjar,Red Bull Racing,red_bull,7.0,5.0,5,10.0,Lapped,2026,5,Canadian Grand Prix,,,fastf1,R
+43,COL,Franco Colapinto,colapinto,Alpine,alpine,10.0,6.0,6,8.0,Lapped,2026,5,Canadian Grand Prix,,,fastf1,R
+30,LAW,Liam Lawson,lawson,Racing Bulls,rb,12.0,7.0,7,6.0,Lapped,2026,5,Canadian Grand Prix,,,fastf1,R
+10,GAS,Pierre Gasly,gasly,Alpine,alpine,14.0,8.0,8,4.0,Lapped,2026,5,Canadian Grand Prix,,,fastf1,R
+55,SAI,Carlos Sainz,sainz,Williams,williams,15.0,9.0,9,2.0,Lapped,2026,5,Canadian Grand Prix,,,fastf1,R
+87,BEA,Oliver Bearman,bearman,Haas F1 Team,haas,16.0,10.0,10,1.0,Lapped,2026,5,Canadian Grand Prix,,,fastf1,R
+81,PIA,Oscar Piastri,piastri,McLaren,mclaren,4.0,11.0,11,0.0,Lapped,2026,5,Canadian Grand Prix,,,fastf1,R
+27,HUL,Nico Hulkenberg,hulkenberg,Audi,audi,11.0,12.0,12,0.0,Lapped,2026,5,Canadian Grand Prix,,,fastf1,R
+5,BOR,Gabriel Bortoleto,bortoleto,Audi,audi,13.0,13.0,13,0.0,Lapped,2026,5,Canadian Grand Prix,,,fastf1,R
+31,OCO,Esteban Ocon,ocon,Haas F1 Team,haas,17.0,14.0,14,0.0,Lapped,2026,5,Canadian Grand Prix,,,fastf1,R
+18,STR,Lance Stroll,stroll,Aston Martin,aston_martin,22.0,15.0,15,0.0,Lapped,2026,5,Canadian Grand Prix,,,fastf1,R
+77,BOT,Valtteri Bottas,bottas,Cadillac,cadillac,21.0,16.0,16,0.0,Lapped,2026,5,Canadian Grand Prix,,,fastf1,R
+11,PER,Sergio Perez,perez,Cadillac,cadillac,20.0,17.0,R,0.0,Retired,2026,5,Canadian Grand Prix,,,fastf1,R
+1,NOR,Lando Norris,norris,McLaren,mclaren,3.0,18.0,R,0.0,Retired,2026,5,Canadian Grand Prix,,,fastf1,R
+63,RUS,George Russell,russell,Mercedes,mercedes,1.0,19.0,R,0.0,Retired,2026,5,Canadian Grand Prix,,,fastf1,R
+14,ALO,Fernando Alonso,alonso,Aston Martin,aston_martin,19.0,20.0,R,0.0,Retired,2026,5,Canadian Grand Prix,,,fastf1,R
+23,ALB,Alexander Albon,albon,Williams,williams,18.0,21.0,R,0.0,Retired,2026,5,Canadian Grand Prix,,,fastf1,R
+41,LIN,Arvid Lindblad,arvid_lindblad,Racing Bulls,rb,9.0,22.0,W,0.0,Did not start,2026,5,Canadian Grand Prix,,,fastf1,R
+12,ANT,Kimi Antonelli,antonelli,Mercedes,mercedes,-1.0,1.0,1,25.0,Finished,2026,6,Monaco Grand Prix,,,fastf1,R
+44,HAM,Lewis Hamilton,hamilton,Ferrari,ferrari,-1.0,2.0,2,18.0,Finished,2026,6,Monaco Grand Prix,,,fastf1,R
+6,HAD,Isack Hadjar,hadjar,Red Bull Racing,red_bull,-1.0,3.0,3,15.0,Finished,2026,6,Monaco Grand Prix,,,fastf1,R
+81,PIA,Oscar Piastri,piastri,McLaren,mclaren,-1.0,4.0,4,12.0,Finished,2026,6,Monaco Grand Prix,,,fastf1,R
+30,LAW,Liam Lawson,lawson,Racing Bulls,rb,-1.0,5.0,5,10.0,Finished,2026,6,Monaco Grand Prix,,,fastf1,R
+41,LIN,Arvid Lindblad,arvid_lindblad,Racing Bulls,rb,-1.0,6.0,6,8.0,Finished,2026,6,Monaco Grand Prix,,,fastf1,R
+10,GAS,Pierre Gasly,gasly,Alpine,alpine,-1.0,7.0,7,6.0,Finished,2026,6,Monaco Grand Prix,,,fastf1,R
+23,ALB,Alexander Albon,albon,Williams,williams,-1.0,8.0,8,4.0,Finished,2026,6,Monaco Grand Prix,,,fastf1,R
+31,OCO,Esteban Ocon,ocon,Haas F1 Team,haas,-1.0,9.0,9,2.0,Finished,2026,6,Monaco Grand Prix,,,fastf1,R
+11,PER,Sergio Perez,perez,Cadillac,cadillac,-1.0,10.0,10,1.0,Finished,2026,6,Monaco Grand Prix,,,fastf1,R
+14,ALO,Fernando Alonso,alonso,Aston Martin,aston_martin,-1.0,11.0,11,0.0,Finished,2026,6,Monaco Grand Prix,,,fastf1,R
+5,BOR,Gabriel Bortoleto,bortoleto,Audi,audi,-1.0,12.0,12,0.0,Finished,2026,6,Monaco Grand Prix,,,fastf1,R
+63,RUS,George Russell,russell,Mercedes,mercedes,-1.0,13.0,13,0.0,Finished,2026,6,Monaco Grand Prix,,,fastf1,R
+27,HUL,Nico Hulkenberg,hulkenberg,Audi,audi,-1.0,14.0,14,0.0,Finished,2026,6,Monaco Grand Prix,,,fastf1,R
+43,COL,Franco Colapinto,colapinto,Alpine,alpine,-1.0,15.0,15,0.0,Finished,2026,6,Monaco Grand Prix,,,fastf1,R
+55,SAI,Carlos Sainz,sainz,Williams,williams,-1.0,16.0,16,0.0,Retired,2026,6,Monaco Grand Prix,,,fastf1,R
+16,LEC,Charles Leclerc,leclerc,Ferrari,ferrari,-1.0,17.0,R,0.0,Retired,2026,6,Monaco Grand Prix,,,fastf1,R
+18,STR,Lance Stroll,stroll,Aston Martin,aston_martin,-1.0,18.0,R,0.0,Retired,2026,6,Monaco Grand Prix,,,fastf1,R
+1,NOR,Lando Norris,norris,McLaren,mclaren,-1.0,19.0,R,0.0,Retired,2026,6,Monaco Grand Prix,,,fastf1,R
+87,BEA,Oliver Bearman,bearman,Haas F1 Team,haas,-1.0,20.0,R,0.0,Retired,2026,6,Monaco Grand Prix,,,fastf1,R
+77,BOT,Valtteri Bottas,bottas,Cadillac,cadillac,-1.0,21.0,R,0.0,Retired,2026,6,Monaco Grand Prix,,,fastf1,R
+3,VER,Max Verstappen,max_verstappen,Red Bull Racing,red_bull,-1.0,22.0,R,0.0,Retired,2026,6,Monaco Grand Prix,,,fastf1,R

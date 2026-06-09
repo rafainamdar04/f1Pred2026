@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useApi } from '../hooks/useApi';
 import { getTeamColor } from '../constants/teamColors';
 import { getCircuitSvg } from '../constants/circuits';
+import { computeRacePhase } from '../utils/phase';
 
 const S = {
   wrap: { maxWidth: '1180px', margin: '0 auto', padding: '0 48px' },
@@ -242,10 +243,10 @@ export function RaceDetail() {
 
   const races = calendar?.races ?? [];
   const selectedRace = races.find(r => r.round === selectedRound);
-  const phase = selectedRace?.phase ?? 'upcoming';
-  const prequaliReady = !!selectedRace?.prequali_available;
-  const postqualiReady = !!selectedRace?.postquali_available;
-  const resultReady = !!selectedRace?.result_available;
+  // Recompute phase from the appointed timestamps so the lifecycle stays live
+  // even when the calendar is a static snapshot (see utils/phase.js).
+  const { phase, prequali_available: prequaliReady, postquali_available: postqualiReady, result_available: resultReady }
+    = computeRacePhase(selectedRace);
 
   // Only fetch each prediction once it has reached its appointed publication time.
   const { data: prequali } = useApi(selectedRound && prequaliReady ? `/api/predictions/${selectedRound}/prequali` : null);

@@ -1,0 +1,133 @@
+driver_number,driver_code,driver_name,driver_id,constructor_name,constructor_id,qualifying_position,grid_position,q1_time,q2_time,q3_time,season,round,race_name
+63,RUS,George Russell,russell,Mercedes,mercedes,1.0,1.0,0 days 00:01:19.507000,0 days 00:01:18.934000,0 days 00:01:18.518000,2026,1,Australian Grand Prix
+12,ANT,Kimi Antonelli,antonelli,Mercedes,mercedes,2.0,2.0,0 days 00:01:20.120000,0 days 00:01:19.435000,0 days 00:01:18.811000,2026,1,Australian Grand Prix
+6,HAD,Isack Hadjar,hadjar,Red Bull Racing,red_bull,3.0,3.0,0 days 00:01:20.023000,0 days 00:01:19.653000,0 days 00:01:19.303000,2026,1,Australian Grand Prix
+16,LEC,Charles Leclerc,leclerc,Ferrari,ferrari,4.0,4.0,0 days 00:01:20.226000,0 days 00:01:19.357000,0 days 00:01:19.327000,2026,1,Australian Grand Prix
+81,PIA,Oscar Piastri,piastri,McLaren,mclaren,5.0,5.0,0 days 00:01:19.664000,0 days 00:01:19.525000,0 days 00:01:19.380000,2026,1,Australian Grand Prix
+1,NOR,Lando Norris,norris,McLaren,mclaren,6.0,6.0,0 days 00:01:20.010000,0 days 00:01:19.882000,0 days 00:01:19.475000,2026,1,Australian Grand Prix
+44,HAM,Lewis Hamilton,hamilton,Ferrari,ferrari,7.0,7.0,0 days 00:01:19.811000,0 days 00:01:19.921000,0 days 00:01:19.478000,2026,1,Australian Grand Prix
+30,LAW,Liam Lawson,lawson,Racing Bulls,rb,8.0,8.0,0 days 00:01:20.491000,0 days 00:01:20.144000,0 days 00:01:19.994000,2026,1,Australian Grand Prix
+41,LIN,Arvid Lindblad,arvid_lindblad,Racing Bulls,rb,9.0,9.0,0 days 00:01:20.409000,0 days 00:01:19.971000,0 days 00:01:21.247000,2026,1,Australian Grand Prix
+5,BOR,Gabriel Bortoleto,bortoleto,Audi,audi,10.0,10.0,0 days 00:01:20.495000,0 days 00:01:20.221000,,2026,1,Australian Grand Prix
+27,HUL,Nico Hulkenberg,hulkenberg,Audi,audi,11.0,11.0,0 days 00:01:21.024000,0 days 00:01:20.303000,,2026,1,Australian Grand Prix
+87,BEA,Oliver Bearman,bearman,Haas F1 Team,haas,12.0,12.0,0 days 00:01:21.247000,0 days 00:01:20.311000,,2026,1,Australian Grand Prix
+31,OCO,Esteban Ocon,ocon,Haas F1 Team,haas,13.0,13.0,0 days 00:01:20.759000,0 days 00:01:20.491000,,2026,1,Australian Grand Prix
+10,GAS,Pierre Gasly,gasly,Alpine,alpine,14.0,14.0,0 days 00:01:21.138000,0 days 00:01:20.501000,,2026,1,Australian Grand Prix
+23,ALB,Alexander Albon,albon,Williams,williams,15.0,15.0,0 days 00:01:21.051000,0 days 00:01:20.941000,,2026,1,Australian Grand Prix
+43,COL,Franco Colapinto,colapinto,Alpine,alpine,16.0,16.0,0 days 00:01:21.200000,0 days 00:01:21.270000,,2026,1,Australian Grand Prix
+14,ALO,Fernando Alonso,alonso,Aston Martin,aston_martin,17.0,17.0,0 days 00:01:21.969000,,,2026,1,Australian Grand Prix
+11,PER,Sergio Perez,perez,Cadillac,cadillac,18.0,18.0,0 days 00:01:22.605000,,,2026,1,Australian Grand Prix
+77,BOT,Valtteri Bottas,bottas,Cadillac,cadillac,19.0,19.0,0 days 00:01:23.244000,,,2026,1,Australian Grand Prix
+18,STR,Lance Stroll,,Aston Martin,,,,,,,2026,1,Australian Grand Prix
+3,VER,Max Verstappen,,Red Bull Racing,,,,,,,2026,1,Australian Grand Prix
+55,SAI,Carlos Sainz,,Williams,,,,,,,2026,1,Australian Grand Prix
+12,ANT,Kimi Antonelli,antonelli,Mercedes,mercedes,1.0,1.0,0 days 00:01:33.305000,0 days 00:01:32.443000,0 days 00:01:32.064000,2026,2,Chinese Grand Prix
+63,RUS,George Russell,russell,Mercedes,mercedes,2.0,2.0,0 days 00:01:33.262000,0 days 00:01:32.523000,0 days 00:01:32.286000,2026,2,Chinese Grand Prix
+44,HAM,Lewis Hamilton,hamilton,Ferrari,ferrari,3.0,3.0,0 days 00:01:33.522000,0 days 00:01:32.567000,0 days 00:01:32.415000,2026,2,Chinese Grand Prix
+16,LEC,Charles Leclerc,leclerc,Ferrari,ferrari,4.0,4.0,0 days 00:01:33.175000,0 days 00:01:32.486000,0 days 00:01:32.428000,2026,2,Chinese Grand Prix
+81,PIA,Oscar Piastri,piastri,McLaren,mclaren,5.0,5.0,0 days 00:01:33.590000,0 days 00:01:33.130000,0 days 00:01:32.550000,2026,2,Chinese Grand Prix
+1,NOR,Lando Norris,norris,McLaren,mclaren,6.0,6.0,0 days 00:01:33.535000,0 days 00:01:32.910000,0 days 00:01:32.608000,2026,2,Chinese Grand Prix
+10,GAS,Pierre Gasly,gasly,Alpine,alpine,7.0,7.0,0 days 00:01:33.788000,0 days 00:01:33.003000,0 days 00:01:32.873000,2026,2,Chinese Grand Prix
+3,VER,Max Verstappen,max_verstappen,Red Bull Racing,red_bull,8.0,8.0,0 days 00:01:33.417000,0 days 00:01:33.098000,0 days 00:01:33.002000,2026,2,Chinese Grand Prix
+6,HAD,Isack Hadjar,hadjar,Red Bull Racing,red_bull,9.0,9.0,0 days 00:01:33.632000,0 days 00:01:33.352000,0 days 00:01:33.121000,2026,2,Chinese Grand Prix
+87,BEA,Oliver Bearman,bearman,Haas F1 Team,haas,10.0,10.0,0 days 00:01:33.687000,0 days 00:01:33.197000,0 days 00:01:33.292000,2026,2,Chinese Grand Prix
+27,HUL,Nico Hulkenberg,hulkenberg,Audi,audi,11.0,11.0,0 days 00:01:34.116000,0 days 00:01:33.354000,,2026,2,Chinese Grand Prix
+43,COL,Franco Colapinto,colapinto,Alpine,alpine,12.0,12.0,0 days 00:01:33.634000,0 days 00:01:33.357000,,2026,2,Chinese Grand Prix
+31,OCO,Esteban Ocon,ocon,Haas F1 Team,haas,13.0,13.0,0 days 00:01:33.974000,0 days 00:01:33.538000,,2026,2,Chinese Grand Prix
+30,LAW,Liam Lawson,lawson,Racing Bulls,rb,14.0,14.0,0 days 00:01:34.139000,0 days 00:01:33.765000,,2026,2,Chinese Grand Prix
+41,LIN,Arvid Lindblad,arvid_lindblad,Racing Bulls,rb,15.0,15.0,0 days 00:01:33.906000,0 days 00:01:33.784000,,2026,2,Chinese Grand Prix
+5,BOR,Gabriel Bortoleto,bortoleto,Audi,audi,16.0,16.0,0 days 00:01:33.549000,0 days 00:01:33.965000,,2026,2,Chinese Grand Prix
+55,SAI,Carlos Sainz,sainz,Williams,williams,17.0,17.0,0 days 00:01:34.317000,,,2026,2,Chinese Grand Prix
+23,ALB,Alexander Albon,albon,Williams,williams,18.0,18.0,0 days 00:01:34.772000,,,2026,2,Chinese Grand Prix
+14,ALO,Fernando Alonso,alonso,Aston Martin,aston_martin,19.0,19.0,0 days 00:01:35.203000,,,2026,2,Chinese Grand Prix
+77,BOT,Valtteri Bottas,bottas,Cadillac,cadillac,20.0,20.0,0 days 00:01:35.436000,,,2026,2,Chinese Grand Prix
+18,STR,Lance Stroll,stroll,Aston Martin,aston_martin,21.0,21.0,0 days 00:01:35.995000,,,2026,2,Chinese Grand Prix
+11,PER,Sergio Perez,perez,Cadillac,cadillac,22.0,22.0,0 days 00:01:36.906000,,,2026,2,Chinese Grand Prix
+12,ANT,Kimi Antonelli,antonelli,Mercedes,mercedes,1.0,1.0,0 days 00:01:30.035000,0 days 00:01:29.048000,0 days 00:01:28.778000,2026,3,Japanese Grand Prix
+63,RUS,George Russell,russell,Mercedes,mercedes,2.0,2.0,0 days 00:01:29.967000,0 days 00:01:29.686000,0 days 00:01:29.076000,2026,3,Japanese Grand Prix
+81,PIA,Oscar Piastri,piastri,McLaren,mclaren,3.0,3.0,0 days 00:01:30.200000,0 days 00:01:29.451000,0 days 00:01:29.132000,2026,3,Japanese Grand Prix
+16,LEC,Charles Leclerc,leclerc,Ferrari,ferrari,4.0,4.0,0 days 00:01:29.915000,0 days 00:01:29.303000,0 days 00:01:29.405000,2026,3,Japanese Grand Prix
+1,NOR,Lando Norris,norris,McLaren,mclaren,5.0,5.0,0 days 00:01:30.401000,0 days 00:01:29.795000,0 days 00:01:29.409000,2026,3,Japanese Grand Prix
+44,HAM,Lewis Hamilton,hamilton,Ferrari,ferrari,6.0,6.0,0 days 00:01:30.309000,0 days 00:01:29.589000,0 days 00:01:29.567000,2026,3,Japanese Grand Prix
+10,GAS,Pierre Gasly,gasly,Alpine,alpine,7.0,7.0,0 days 00:01:30.584000,0 days 00:01:29.874000,0 days 00:01:29.691000,2026,3,Japanese Grand Prix
+6,HAD,Isack Hadjar,hadjar,Red Bull Racing,red_bull,8.0,8.0,0 days 00:01:30.662000,0 days 00:01:30.104000,0 days 00:01:29.978000,2026,3,Japanese Grand Prix
+5,BOR,Gabriel Bortoleto,bortoleto,Audi,audi,9.0,9.0,0 days 00:01:30.359000,0 days 00:01:29.990000,0 days 00:01:30.274000,2026,3,Japanese Grand Prix
+41,LIN,Arvid Lindblad,arvid_lindblad,Racing Bulls,rb,10.0,10.0,0 days 00:01:30.781000,0 days 00:01:30.109000,0 days 00:01:30.319000,2026,3,Japanese Grand Prix
+3,VER,Max Verstappen,max_verstappen,Red Bull Racing,red_bull,11.0,11.0,0 days 00:01:30.519000,0 days 00:01:30.262000,,2026,3,Japanese Grand Prix
+31,OCO,Esteban Ocon,ocon,Haas F1 Team,haas,12.0,12.0,0 days 00:01:30.915000,0 days 00:01:30.309000,,2026,3,Japanese Grand Prix
+27,HUL,Nico Hulkenberg,hulkenberg,Audi,audi,13.0,13.0,0 days 00:01:30.358000,0 days 00:01:30.387000,,2026,3,Japanese Grand Prix
+30,LAW,Liam Lawson,lawson,Racing Bulls,rb,14.0,14.0,0 days 00:01:30.657000,0 days 00:01:30.495000,,2026,3,Japanese Grand Prix
+43,COL,Franco Colapinto,colapinto,Alpine,alpine,15.0,15.0,0 days 00:01:30.931000,0 days 00:01:30.627000,,2026,3,Japanese Grand Prix
+55,SAI,Carlos Sainz,sainz,Williams,williams,16.0,16.0,0 days 00:01:30.927000,0 days 00:01:31.033000,,2026,3,Japanese Grand Prix
+23,ALB,Alexander Albon,albon,Williams,williams,17.0,17.0,0 days 00:01:31.088000,,,2026,3,Japanese Grand Prix
+87,BEA,Oliver Bearman,bearman,Haas F1 Team,haas,18.0,18.0,0 days 00:01:31.090000,,,2026,3,Japanese Grand Prix
+11,PER,Sergio Perez,perez,Cadillac,cadillac,19.0,19.0,0 days 00:01:32.206000,,,2026,3,Japanese Grand Prix
+77,BOT,Valtteri Bottas,bottas,Cadillac,cadillac,20.0,20.0,0 days 00:01:32.330000,,,2026,3,Japanese Grand Prix
+14,ALO,Fernando Alonso,alonso,Aston Martin,aston_martin,21.0,21.0,0 days 00:01:32.646000,,,2026,3,Japanese Grand Prix
+18,STR,Lance Stroll,stroll,Aston Martin,aston_martin,22.0,22.0,0 days 00:01:32.920000,,,2026,3,Japanese Grand Prix
+12,ANT,Kimi Antonelli,antonelli,Mercedes,mercedes,1.0,1.0,0 days 00:01:28.653000,0 days 00:01:28.289000,0 days 00:01:27.798000,2026,4,Miami Grand Prix
+3,VER,Max Verstappen,max_verstappen,Red Bull Racing,red_bull,2.0,2.0,0 days 00:01:29.099000,0 days 00:01:28.116000,0 days 00:01:27.964000,2026,4,Miami Grand Prix
+16,LEC,Charles Leclerc,leclerc,Ferrari,ferrari,3.0,3.0,0 days 00:01:28.938000,0 days 00:01:28.315000,0 days 00:01:28.143000,2026,4,Miami Grand Prix
+1,NOR,Lando Norris,norris,McLaren,mclaren,4.0,4.0,0 days 00:01:29.183000,0 days 00:01:28.920000,0 days 00:01:28.183000,2026,4,Miami Grand Prix
+63,RUS,George Russell,russell,Mercedes,mercedes,5.0,5.0,0 days 00:01:29.492000,0 days 00:01:28.477000,0 days 00:01:28.197000,2026,4,Miami Grand Prix
+44,HAM,Lewis Hamilton,hamilton,Ferrari,ferrari,6.0,6.0,0 days 00:01:29.483000,0 days 00:01:28.477000,0 days 00:01:28.319000,2026,4,Miami Grand Prix
+81,PIA,Oscar Piastri,piastri,McLaren,mclaren,7.0,7.0,0 days 00:01:29.920000,0 days 00:01:28.332000,0 days 00:01:28.500000,2026,4,Miami Grand Prix
+43,COL,Franco Colapinto,colapinto,Alpine,alpine,8.0,8.0,0 days 00:01:29.584000,0 days 00:01:28.975000,0 days 00:01:28.762000,2026,4,Miami Grand Prix
+10,GAS,Pierre Gasly,gasly,Alpine,alpine,9.0,9.0,0 days 00:01:29.914000,0 days 00:01:29.070000,0 days 00:01:28.810000,2026,4,Miami Grand Prix
+27,HUL,Nico Hulkenberg,hulkenberg,Audi,audi,10.0,10.0,0 days 00:01:29.645000,0 days 00:01:29.439000,,2026,4,Miami Grand Prix
+30,LAW,Liam Lawson,lawson,Racing Bulls,rb,11.0,11.0,0 days 00:01:29.595000,0 days 00:01:29.499000,,2026,4,Miami Grand Prix
+87,BEA,Oliver Bearman,bearman,Haas F1 Team,haas,12.0,12.0,0 days 00:01:29.340000,0 days 00:01:29.567000,,2026,4,Miami Grand Prix
+55,SAI,Carlos Sainz,sainz,Williams,williams,13.0,13.0,0 days 00:01:29.540000,0 days 00:01:29.568000,,2026,4,Miami Grand Prix
+31,OCO,Esteban Ocon,ocon,Haas F1 Team,haas,14.0,14.0,0 days 00:01:29.838000,0 days 00:01:29.772000,,2026,4,Miami Grand Prix
+23,ALB,Alexander Albon,albon,Williams,williams,15.0,15.0,0 days 00:01:29.720000,0 days 00:01:29.946000,,2026,4,Miami Grand Prix
+41,LIN,Arvid Lindblad,arvid_lindblad,Racing Bulls,rb,16.0,16.0,0 days 00:01:30.133000,,,2026,4,Miami Grand Prix
+14,ALO,Fernando Alonso,alonso,Aston Martin,aston_martin,17.0,17.0,0 days 00:01:31.098000,,,2026,4,Miami Grand Prix
+18,STR,Lance Stroll,stroll,Aston Martin,aston_martin,18.0,18.0,0 days 00:01:31.164000,,,2026,4,Miami Grand Prix
+77,BOT,Valtteri Bottas,bottas,Cadillac,cadillac,19.0,19.0,0 days 00:01:31.629000,,,2026,4,Miami Grand Prix
+11,PER,Sergio Perez,perez,Cadillac,cadillac,20.0,20.0,0 days 00:01:31.967000,,,2026,4,Miami Grand Prix
+5,BOR,Gabriel Bortoleto,bortoleto,Audi,audi,21.0,21.0,0 days 00:01:33.737000,,,2026,4,Miami Grand Prix
+6,HAD,Isack Hadjar,hadjar,Red Bull Racing,red_bull,22.0,22.0,,0 days 00:01:28.941000,0 days 00:01:28.789000,2026,4,Miami Grand Prix
+63,RUS,George Russell,russell,Mercedes,mercedes,1.0,1.0,0 days 00:01:13.953000,0 days 00:01:13.079000,0 days 00:01:12.578000,2026,5,Canadian Grand Prix
+12,ANT,Kimi Antonelli,antonelli,Mercedes,mercedes,2.0,2.0,0 days 00:01:13.380000,0 days 00:01:13.076000,0 days 00:01:12.646000,2026,5,Canadian Grand Prix
+1,NOR,Lando Norris,norris,McLaren,mclaren,3.0,3.0,0 days 00:01:13.503000,0 days 00:01:13.049000,0 days 00:01:12.729000,2026,5,Canadian Grand Prix
+81,PIA,Oscar Piastri,piastri,McLaren,mclaren,4.0,4.0,0 days 00:01:13.559000,0 days 00:01:13.285000,0 days 00:01:12.781000,2026,5,Canadian Grand Prix
+44,HAM,Lewis Hamilton,hamilton,Ferrari,ferrari,5.0,5.0,0 days 00:01:13.767000,0 days 00:01:13.041000,0 days 00:01:12.868000,2026,5,Canadian Grand Prix
+3,VER,Max Verstappen,max_verstappen,Red Bull Racing,red_bull,6.0,6.0,0 days 00:01:14.067000,0 days 00:01:13.479000,0 days 00:01:12.907000,2026,5,Canadian Grand Prix
+6,HAD,Isack Hadjar,hadjar,Red Bull Racing,red_bull,7.0,7.0,0 days 00:01:13.654000,0 days 00:01:12.975000,0 days 00:01:12.935000,2026,5,Canadian Grand Prix
+16,LEC,Charles Leclerc,leclerc,Ferrari,ferrari,8.0,8.0,0 days 00:01:13.825000,0 days 00:01:13.496000,0 days 00:01:12.976000,2026,5,Canadian Grand Prix
+41,LIN,Arvid Lindblad,arvid_lindblad,Racing Bulls,rb,9.0,9.0,0 days 00:01:13.895000,0 days 00:01:13.548000,0 days 00:01:13.280000,2026,5,Canadian Grand Prix
+43,COL,Franco Colapinto,colapinto,Alpine,alpine,10.0,10.0,0 days 00:01:14.466000,0 days 00:01:13.857000,0 days 00:01:13.697000,2026,5,Canadian Grand Prix
+27,HUL,Nico Hulkenberg,hulkenberg,Audi,audi,11.0,11.0,0 days 00:01:14.562000,0 days 00:01:13.886000,,2026,5,Canadian Grand Prix
+30,LAW,Liam Lawson,lawson,Racing Bulls,rb,12.0,12.0,0 days 00:01:14.346000,0 days 00:01:13.897000,,2026,5,Canadian Grand Prix
+5,BOR,Gabriel Bortoleto,bortoleto,Audi,audi,13.0,13.0,0 days 00:01:14.775000,0 days 00:01:14.071000,,2026,5,Canadian Grand Prix
+10,GAS,Pierre Gasly,gasly,Alpine,alpine,14.0,14.0,0 days 00:01:14.698000,0 days 00:01:14.187000,,2026,5,Canadian Grand Prix
+55,SAI,Carlos Sainz,sainz,Williams,williams,15.0,15.0,0 days 00:01:14.276000,0 days 00:01:14.273000,,2026,5,Canadian Grand Prix
+87,BEA,Oliver Bearman,bearman,Haas F1 Team,haas,16.0,16.0,0 days 00:01:14.449000,0 days 00:01:14.416000,,2026,5,Canadian Grand Prix
+31,OCO,Esteban Ocon,ocon,Haas F1 Team,haas,17.0,17.0,0 days 00:01:14.845000,,,2026,5,Canadian Grand Prix
+23,ALB,Alexander Albon,albon,Williams,williams,18.0,18.0,0 days 00:01:14.851000,,,2026,5,Canadian Grand Prix
+14,ALO,Fernando Alonso,alonso,Aston Martin,aston_martin,19.0,19.0,0 days 00:01:15.196000,,,2026,5,Canadian Grand Prix
+11,PER,Sergio Perez,perez,Cadillac,cadillac,20.0,20.0,0 days 00:01:15.429000,,,2026,5,Canadian Grand Prix
+18,STR,Lance Stroll,stroll,Aston Martin,aston_martin,21.0,21.0,0 days 00:01:16.195000,,,2026,5,Canadian Grand Prix
+77,BOT,Valtteri Bottas,bottas,Cadillac,cadillac,22.0,22.0,0 days 00:01:16.272000,,,2026,5,Canadian Grand Prix
+12,ANT,Kimi Antonelli,antonelli,Mercedes,mercedes,1.0,1.0,0 days 00:01:13.599000,0 days 00:01:12.704000,0 days 00:01:12.051000,2026,6,Monaco Grand Prix
+3,VER,Max Verstappen,max_verstappen,Red Bull Racing,red_bull,2.0,2.0,0 days 00:01:13.490000,0 days 00:01:12.499000,0 days 00:01:12.094000,2026,6,Monaco Grand Prix
+44,HAM,Lewis Hamilton,hamilton,Ferrari,ferrari,3.0,3.0,0 days 00:01:13.777000,0 days 00:01:12.934000,0 days 00:01:12.279000,2026,6,Monaco Grand Prix
+16,LEC,Charles Leclerc,leclerc,Ferrari,ferrari,4.0,4.0,0 days 00:01:13.293000,0 days 00:01:12.774000,0 days 00:01:12.351000,2026,6,Monaco Grand Prix
+6,HAD,Isack Hadjar,hadjar,Red Bull Racing,red_bull,5.0,5.0,0 days 00:01:14.408000,0 days 00:01:12.722000,0 days 00:01:12.434000,2026,6,Monaco Grand Prix
+63,RUS,George Russell,russell,Mercedes,mercedes,6.0,6.0,0 days 00:01:14.214000,0 days 00:01:13.238000,0 days 00:01:12.445000,2026,6,Monaco Grand Prix
+81,PIA,Oscar Piastri,piastri,McLaren,mclaren,7.0,7.0,0 days 00:01:14.159000,0 days 00:01:12.983000,0 days 00:01:12.624000,2026,6,Monaco Grand Prix
+1,NOR,Lando Norris,norris,McLaren,mclaren,8.0,8.0,0 days 00:01:13.630000,0 days 00:01:12.919000,0 days 00:01:12.765000,2026,6,Monaco Grand Prix
+10,GAS,Pierre Gasly,gasly,Alpine,alpine,9.0,9.0,0 days 00:01:14.469000,0 days 00:01:13.762000,0 days 00:01:13.226000,2026,6,Monaco Grand Prix
+30,LAW,Liam Lawson,lawson,Racing Bulls,rb,10.0,10.0,0 days 00:01:14.498000,0 days 00:01:13.471000,0 days 00:01:13.412000,2026,6,Monaco Grand Prix
+23,ALB,Alexander Albon,albon,Williams,williams,11.0,11.0,0 days 00:01:14.321000,0 days 00:01:13.787000,,2026,6,Monaco Grand Prix
+55,SAI,Carlos Sainz,sainz,Williams,williams,12.0,12.0,0 days 00:01:14.348000,0 days 00:01:13.815000,,2026,6,Monaco Grand Prix
+27,HUL,Nico Hulkenberg,hulkenberg,Audi,audi,13.0,13.0,0 days 00:01:13.923000,0 days 00:01:13.902000,,2026,6,Monaco Grand Prix
+43,COL,Franco Colapinto,colapinto,Alpine,alpine,14.0,14.0,0 days 00:01:14.573000,0 days 00:01:13.995000,,2026,6,Monaco Grand Prix
+41,LIN,Arvid Lindblad,arvid_lindblad,Racing Bulls,rb,15.0,15.0,0 days 00:01:14.685000,0 days 00:01:14.248000,,2026,6,Monaco Grand Prix
+5,BOR,Gabriel Bortoleto,bortoleto,Audi,audi,16.0,16.0,0 days 00:01:14.683000,,,2026,6,Monaco Grand Prix
+31,OCO,Esteban Ocon,ocon,Haas F1 Team,haas,17.0,17.0,0 days 00:01:14.722000,,,2026,6,Monaco Grand Prix
+11,PER,Sergio Perez,perez,Cadillac,cadillac,18.0,18.0,0 days 00:01:14.747000,,,2026,6,Monaco Grand Prix
+87,BEA,Oliver Bearman,bearman,Haas F1 Team,haas,19.0,19.0,0 days 00:01:14.814000,,,2026,6,Monaco Grand Prix
+77,BOT,Valtteri Bottas,bottas,Cadillac,cadillac,20.0,20.0,0 days 00:01:15.283000,,,2026,6,Monaco Grand Prix
+14,ALO,Fernando Alonso,alonso,Aston Martin,aston_martin,21.0,21.0,0 days 00:01:15.349000,,,2026,6,Monaco Grand Prix
+18,STR,Lance Stroll,stroll,Aston Martin,aston_martin,22.0,22.0,0 days 00:01:16.061000,,,2026,6,Monaco Grand Prix
