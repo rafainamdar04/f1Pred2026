@@ -4,6 +4,7 @@ import { useApi } from '../hooks/useApi';
 import { getTeamColor } from '../constants/teamColors';
 import { getCircuitSvg } from '../constants/circuits';
 import { computeRacePhase } from '../utils/phase';
+import { getDriverImage } from '../constants/drivers';
 
 const S = {
   wrap: { maxWidth: '1180px', margin: '0 auto', padding: '0 48px' },
@@ -61,7 +62,6 @@ function CircuitCard({ race, selected, status, onClick }) {
         borderStyle: isCancelled ? 'dashed' : 'solid',
       }}
     >
-      {/* SVG track */}
       <div style={{ width: '100%', height: '54px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         {svg ? (
           <svg viewBox={svg.viewBox} width="106" height="54" style={{ overflow: 'visible' }}>
@@ -120,8 +120,40 @@ function StatusBadge({ status }) {
   );
 }
 
+/* ── Rationale tooltip content ── */
+function RationaleRow({ rationale }) {
+  if (!rationale) return null;
+  const parts = rationale.split('; ').map(part => {
+    const colon = part.lastIndexOf(':');
+    if (colon < 0) return null;
+    const key = part.slice(0, colon).replace(/_/g, ' ');
+    const val = parseFloat(part.slice(colon + 1));
+    if (isNaN(val)) return null;
+    const color = val > 0.005 ? '#34d058' : val < -0.005 ? '#E10600' : '#444';
+    return { key, val: val.toFixed(2), color };
+  }).filter(Boolean);
+
+  if (parts.length === 0) return null;
+
+  return (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '5px', paddingTop: '5px', borderTop: '1px solid rgba(255,255,255,.04)' }}>
+      {parts.map(p => (
+        <span key={p.key} style={{
+          fontSize: '8px', padding: '1px 5px', borderRadius: '2px',
+          background: `${p.color}15`, color: p.color,
+          fontFamily: "'DM Mono', monospace", letterSpacing: '.3px',
+        }}>
+          {p.key}: {p.val}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 /* ── Prediction column ── */
 function PredCol({ title, rows, updatedAt = null, showDelta = false, preRanks = {} }) {
+  const [hoveredId, setHoveredId] = useState(null);
+
   const formatRelative = (value) => {
     if (!value) return 'Updated unknown';
     const then = new Date(value).getTime();
@@ -165,15 +197,25 @@ function PredCol({ title, rows, updatedAt = null, showDelta = false, preRanks = 
         const delta = showDelta && preRank ? preRank - pos : null;
         const posColor = isOut ? '#333' : pos === 1 ? '#E10600' : pos <= 3 ? '#dedede' : pos <= 10 ? '#666' : '#333';
         const rowOpacity = isOut ? 0.5 : status === 'Lapped' ? 0.7 : 1;
+        const isHovered = hoveredId === row.driver_id;
+        const imgSrc = getDriverImage(row.driver_id);
 
         return (
-          <div key={row.driver_id || idx} style={{
-            display: 'grid', gridTemplateColumns: '34px 3px 1fr auto',
-            gap: '8px', alignItems: 'center',
-            padding: '6px 16px',
-            borderBottom: '1px solid rgba(255,255,255,.02)',
-            opacity: rowOpacity,
-          }}>
+          <div
+            key={row.driver_id || idx}
+            onMouseEnter={() => setHoveredId(row.driver_id)}
+            onMouseLeave={() => setHoveredId(null)}
+            style={{
+              display: 'grid', gridTemplateColumns: '34px 3px 24px 1fr auto',
+              gap: '8px', alignItems: 'center',
+              padding: '6px 16px',
+              borderBottom: '1px solid rgba(255,255,255,.02)',
+              opacity: rowOpacity,
+              background: isHovered ? 'rgba(255,255,255,.025)' : 'transparent',
+              transition: 'background .12s',
+              cursor: 'default',
+            }}
+          >
             {/* Position or status badge */}
             {isOut ? (
               <StatusBadge status={status} />
@@ -188,11 +230,26 @@ function PredCol({ title, rows, updatedAt = null, showDelta = false, preRanks = 
 
             <div style={{ height: '24px', background: tc, borderRadius: '1px', flexShrink: 0, opacity: isOut ? 0.4 : 1 }} />
 
+            {/* Driver avatar */}
+            <div style={{
+              width: '24px', height: '24px', borderRadius: '50%', overflow: 'hidden', flexShrink: 0,
+              background: `${tc}22`,
+            }}>
+              {imgSrc ? (
+                <img src={imgSrc} alt={row.driver_id}
+                  style={{ width: '110%', height: '140%', objectFit: 'cover', objectPosition: 'top center', marginLeft: '-5%', marginTop: '-8%' }}
+                  onError={e => { e.currentTarget.parentElement.style.display = 'none'; }}
+                />
+              ) : null}
+            </div>
+
             <div>
               <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '14px', color: isOut ? '#555' : '#fff' }}>
                 {(row.driver_id || row.driver_name || '').toUpperCase()}
               </div>
               <div style={{ fontSize: '9px', color: '#333', marginTop: '1px' }}>{row.constructor_id || row.constructor_name || ''}</div>
+              {/* Rationale on hover */}
+              {isHovered && <RationaleRow rationale={row.rationale} />}
             </div>
 
             {/* Delta arrow */}
@@ -204,7 +261,6 @@ function PredCol({ title, rows, updatedAt = null, showDelta = false, preRanks = 
                 {delta > 0 ? `↑${delta}` : delta < 0 ? `↓${Math.abs(delta)}` : '—'}
               </div>
             ) : (
-              /* Points for actual result column */
               row.points > 0 ? (
                 <div style={{ fontSize: '10px', color: '#444', textAlign: 'right', fontFamily: "'DM Mono', monospace" }}>
                   +{row.points}
@@ -214,6 +270,96 @@ function PredCol({ title, rows, updatedAt = null, showDelta = false, preRanks = 
           </div>
         );
       })}
+    </div>
+  );
+}
+
+/* ── Session schedule for upcoming races ── */
+function SessionSchedule({ race }) {
+  if (!race) return null;
+
+  const fmtSession = (utc) => {
+    if (!utc) return null;
+    const d = new Date(utc);
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const day = d.getUTCDate();
+    const month = months[d.getUTCMonth()];
+    const h = String(d.getUTCHours()).padStart(2, '0');
+    const m = String(d.getUTCMinutes()).padStart(2, '0');
+    return { date: `${day} ${month}`, time: `${h}:${m} UTC` };
+  };
+
+  const sessions = [
+    race.is_sprint && race.sprint_start_utc ? { label: 'Sprint Race', utc: race.sprint_start_utc, color: '#F59E0B' } : null,
+    race.quali_start_utc ? { label: 'Qualifying', utc: race.quali_start_utc, color: '#dedede' } : null,
+    race.race_start_utc  ? { label: 'Race',       utc: race.race_start_utc,  color: '#E10600'  } : null,
+  ].filter(Boolean);
+
+  const fmtOpen = (d) => d
+    ? new Date(d).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'UTC' }) + ' UTC'
+    : 'soon';
+
+  return (
+    <div style={{ background: '#101010', border: '1px solid rgba(255,255,255,.055)', borderRadius: '3px', overflow: 'hidden' }}>
+      {/* Header */}
+      <div style={{ padding: '20px 28px', borderBottom: '1px solid rgba(255,255,255,.055)', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px' }}>
+        <div>
+          <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 900, fontSize: '20px', color: '#fff', marginBottom: '4px' }}>
+            Upcoming Race Weekend
+          </div>
+          <div style={{ fontSize: '11px', color: '#444' }}>
+            {race.name} · {new Date(race.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+          </div>
+        </div>
+        {race.is_sprint && (
+          <span style={{ ...S.chip('amb'), alignSelf: 'flex-start' }}>Sprint Weekend</span>
+        )}
+      </div>
+
+      {/* Session table */}
+      {sessions.length > 0 && (
+        <div style={{ padding: '20px 28px' }}>
+          <div style={{ fontSize: '9px', fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', color: '#444', marginBottom: '14px' }}>
+            Session Schedule
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+            {sessions.map((s, i) => {
+              const fmt = fmtSession(s.utc);
+              return (
+                <div key={s.label} style={{
+                  display: 'grid', gridTemplateColumns: '3px 1fr auto auto',
+                  gap: '12px', alignItems: 'center',
+                  padding: '12px 0',
+                  borderBottom: i < sessions.length - 1 ? '1px solid rgba(255,255,255,.04)' : 'none',
+                }}>
+                  <div style={{ height: '28px', width: '3px', background: s.color, borderRadius: '1px', flexShrink: 0 }} />
+                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '15px', color: '#fff' }}>
+                    {s.label}
+                  </div>
+                  <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '11px', color: '#666' }}>
+                    {fmt?.date}
+                  </div>
+                  <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '11px', color: '#888', textAlign: 'right' }}>
+                    {fmt?.time}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Prediction opens notice */}
+      <div style={{
+        padding: '14px 28px', borderTop: '1px solid rgba(255,255,255,.04)',
+        background: 'rgba(225,6,0,.03)',
+        display: 'flex', alignItems: 'center', gap: '10px',
+      }}>
+        <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#E10600', flexShrink: 0 }} />
+        <div style={{ fontSize: '11px', color: '#555' }}>
+          Pre-qualifying prediction opens {fmtOpen(race.prequali_at_utc)}
+        </div>
+      </div>
     </div>
   );
 }
@@ -229,10 +375,8 @@ export function RaceDetail() {
   const roundsComplete = status?.rounds_completed ?? 0;
   const resultsRounds = results?.races?.map(r => r.round) ?? [];
 
-  // Determine initial selected round
   const [selectedRound, setSelectedRound] = useState(roundParam ? parseInt(roundParam, 10) : null);
 
-  // Auto-select next round when calendar loads if no param
   useEffect(() => {
     if (!roundParam && calendar?.races?.length) {
       const nextRace = calendar.races.find(r => r.round > roundsComplete);
@@ -243,26 +387,21 @@ export function RaceDetail() {
 
   const races = calendar?.races ?? [];
   const selectedRace = races.find(r => r.round === selectedRound);
-  // Recompute phase from the appointed timestamps so the lifecycle stays live
-  // even when the calendar is a static snapshot (see utils/phase.js).
   const { phase, prequali_available: prequaliReady, postquali_available: postqualiReady, result_available: resultReady }
     = computeRacePhase(selectedRace);
 
-  // Only fetch each prediction once it has reached its appointed publication time.
   const { data: prequali } = useApi(selectedRound && prequaliReady ? `/api/predictions/${selectedRound}/prequali` : null);
   const { data: postquali } = useApi(selectedRound && postqualiReady ? `/api/predictions/${selectedRound}/postquali` : null);
   const { data: accuracy } = useApi(selectedRound && resultsRounds.includes(selectedRound) ? `/api/predictions/${selectedRound}/accuracy` : null);
 
   const actualResult = results?.races?.find(r => r.round === selectedRound);
 
-  // Rank maps for delta arrows
   const preRanks = {};
   prequali?.rows?.forEach((row, idx) => { preRanks[row.driver_id] = idx + 1; });
 
   const postqualiRanks = {};
   postquali?.rows?.forEach((row, idx) => { postqualiRanks[row.driver_id] = idx + 1; });
 
-  // All 22 drivers with status for the actual result column
   const actualRows = actualResult
     ? (actualResult.podium || []).map(p => ({
         driver_id: p.driver_id || '',
@@ -335,7 +474,7 @@ export function RaceDetail() {
               </div>
             </div>
 
-            {/* Accuracy banner — only shown for completed rounds */}
+            {/* Accuracy banner */}
             {accuracy && (
               <div style={{
                 display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap',
@@ -417,19 +556,14 @@ export function RaceDetail() {
                 : 'soon';
 
               if (phase === 'upcoming') {
-                return (
-                  <div style={{ padding: '48px 24px', textAlign: 'center', background: '#101010', border: '1px solid rgba(255,255,255,.055)', borderRadius: '3px' }}>
-                    <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '22px', color: '#666', marginBottom: '8px' }}>Upcoming</div>
-                    <div style={{ fontSize: '12px', color: '#444' }}>Pre-qualifying prediction opens {fmtOpen(selectedRace?.prequali_at_utc)}</div>
-                  </div>
-                );
+                return <SessionSchedule race={selectedRace} />;
               }
 
               if (!prequali && !postquali && !showActual) {
                 return (
                   <div style={{ padding: '48px 24px', textAlign: 'center', background: '#101010', border: '1px solid rgba(255,255,255,.055)', borderRadius: '3px' }}>
                     <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: '22px', color: '#444', marginBottom: '8px' }}>Prediction Pending</div>
-                    <div style={{ fontSize: '12px', color: '#444' }}>The {phase === 'prequali' ? 'pre-qualifying' : 'post-qualifying'} run hasn’t completed yet.</div>
+                    <div style={{ fontSize: '12px', color: '#444' }}>The {phase === 'prequali' ? 'pre-qualifying' : 'post-qualifying'} run hasn't completed yet.</div>
                   </div>
                 );
               }
