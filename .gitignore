@@ -45,3 +45,4 @@ Thumbs.db
 
 # AI tooling
 .claude/
+.vercel
