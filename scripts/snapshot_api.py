@@ -49,6 +49,14 @@ STATIC_PATHS = [
 # Per-round prediction views: /api/predictions/{round}/{kind}
 PER_ROUND_KINDS = ["prequali", "postquali", "comparison", "accuracy"]
 
+# These change every race weekend (next race pointer shifts after each result).
+# Delete before the snapshot loop so a backend 404 leaves no stale file on disk.
+VOLATILE_PATHS = [
+    "/api/predictions/next",
+    "/api/predictions/next/prequali",
+    "/api/predictions/next/postquali",
+]
+
 
 def _write(path: str, payload: object) -> None:
     out = OUT_ROOT / (path.lstrip("/") + ".json")
@@ -75,6 +83,14 @@ def main() -> None:
     for did in driver_ids:
         paths.append(f"/api/drivers/{did}")
 
+    # Remove volatile files before writing so stale versions don't survive a 404.
+    deleted = 0
+    for path in VOLATILE_PATHS:
+        out = OUT_ROOT / (path.lstrip("/") + ".json")
+        if out.exists():
+            out.unlink()
+            deleted += 1
+
     written, skipped = 0, 0
     for path in paths:
         resp = client.get(path)
@@ -84,7 +100,7 @@ def main() -> None:
         else:
             skipped += 1
 
-    print(f"[snapshot] wrote {written}, skipped {skipped} (gated/missing) -> {OUT_ROOT / 'api'}")
+    print(f"[snapshot] deleted {deleted} volatile, wrote {written}, skipped {skipped} (gated/missing) -> {OUT_ROOT / 'api'}")
 
 
 if __name__ == "__main__":
