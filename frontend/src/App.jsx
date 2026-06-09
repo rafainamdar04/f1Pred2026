@@ -3,6 +3,7 @@ import { Home } from './pages/Home';
 import { RaceDetail } from './pages/RaceDetail';
 import { ModelReport } from './pages/ModelReport';
 import { Drivers } from './pages/Drivers';
+import { DriverProfile } from './pages/DriverProfile';
 import { Archive } from './pages/Archive';
 import { useApi } from './hooks/useApi';
 
@@ -94,6 +95,7 @@ export default function App() {
           <Route path="/race" element={<RaceDetail />} />
           <Route path="/race/:round" element={<RaceDetail />} />
           <Route path="/drivers" element={<Drivers />} />
+          <Route path="/drivers/:driverId" element={<DriverProfile />} />
           <Route path="/model" element={<ModelReport />} />
           <Route path="/archive" element={<Archive />} />
         </Routes>

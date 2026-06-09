@@ -64,9 +64,16 @@ def main() -> None:
     if cal.status_code == 200:
         rounds = [int(r["round"]) for r in cal.json().get("races", []) if r.get("round")]
 
+    driver_ids: list[str] = []
+    dr = client.get("/api/standings/drivers")
+    if dr.status_code == 200:
+        driver_ids = [d["driver_id"] for d in dr.json().get("drivers", []) if d.get("driver_id")]
+
     paths = list(STATIC_PATHS)
     for rnd in rounds:
         paths.extend(f"/api/predictions/{rnd}/{kind}" for kind in PER_ROUND_KINDS)
+    for did in driver_ids:
+        paths.append(f"/api/drivers/{did}")
 
     written, skipped = 0, 0
     for path in paths:

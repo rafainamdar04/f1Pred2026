@@ -64,6 +64,7 @@ PUBLIC_API_PATHS = {
 }
 PUBLIC_API_PREFIXES = (
     "/api/predictions",
+    "/api/drivers",
 )
 ADMIN_ONLY_PATHS: set[str] = set()  # /health and /ready are public for infra use
 
@@ -1174,6 +1175,115 @@ def get_all_accuracy() -> list:
         if acc:
             out.append(acc)
     return out
+
+
+@app.get("/api/drivers/{driver_id}")
+def get_driver_profile(driver_id: str) -> dict:
+    """Full driver profile: season stats, per-round results, and prediction accuracy."""
+    import pandas as pd
+
+    driver_id = driver_id.lower()
+
+    try:
+        d_standings, _ = _standings_from_results()
+    except Exception:
+        d_standings = []
+
+    driver_info = next((d for d in d_standings if d["driver_id"] == driver_id), None)
+    if driver_info is None:
+        raise HTTPException(status_code=404, detail=f"Driver '{driver_id}' not found")
+
+    results_file = Path(PATHS["data"]) / f"{CURRENT_SEASON}_race_results.csv"
+    if not results_file.exists():
+        raise HTTPException(status_code=404, detail="Race results not found")
+
+    df = pd.read_csv(results_file)
+    if "session_type" not in df.columns:
+        df["session_type"] = "R"
+
+    df["_did"] = df["driver_id"].astype(str).str.lower()
+    driver_df = df[(df["_did"] == driver_id) & (df["session_type"] == "R")].copy()
+
+    completed_rounds = sorted(df[df["session_type"] == "R"]["round"].astype(int).unique())
+
+    pre_ranks: dict[int, int] = {}
+    post_ranks: dict[int, int] = {}
+    for rnd in completed_rounds:
+        pre_path = _prediction_path(rnd, "prequali")
+        post_path = _prediction_path(rnd, "postquali")
+        if pre_path.exists():
+            try:
+                pre = _load_prequali_predictions(pre_path)
+                for idx, row in enumerate(pre.rows):
+                    if row.driver_id.lower() == driver_id:
+                        pre_ranks[rnd] = idx + 1
+                        break
+            except Exception:
+                pass
+        if post_path.exists():
+            try:
+                post = _load_postquali_predictions(post_path)
+                for idx, row in enumerate(post.rows):
+                    if row.driver_id.lower() == driver_id:
+                        post_ranks[rnd] = idx + 1
+                        break
+            except Exception:
+                pass
+
+    rounds = []
+    for _, row in driver_df.sort_values("round").iterrows():
+        rnd = int(row["round"])
+        finish = int(row["finish_position"]) if pd.notna(row.get("finish_position")) else None
+        grid = int(row["grid_position"]) if pd.notna(row.get("grid_position")) else None
+        delta = (grid - finish) if (grid is not None and finish is not None) else None
+        pre_r = pre_ranks.get(rnd)
+        post_r = post_ranks.get(rnd)
+        rounds.append({
+            "round": rnd,
+            "race_name": str(row.get("race_name", "")),
+            "finish_position": finish,
+            "grid_position": grid,
+            "position_delta": delta,
+            "points": float(row["points"]) if pd.notna(row.get("points")) else 0.0,
+            "status": _normalise_driver_status(row.get("status")),
+            "prequali_rank": pre_r,
+            "postquali_rank": post_r,
+            "prequali_error": abs(pre_r - finish) if (pre_r and finish) else None,
+            "postquali_error": abs(post_r - finish) if (post_r and finish) else None,
+        })
+
+    finishes = [r["finish_position"] for r in rounds if r["finish_position"] is not None]
+    dnf_statuses = {"DNF", "DNS", "DSQ", "Retired"}
+    dnf_count = sum(1 for r in rounds if r["status"] in dnf_statuses)
+
+    pre_errors = [r["prequali_error"] for r in rounds if r["prequali_error"] is not None]
+    post_errors = [r["postquali_error"] for r in rounds if r["postquali_error"] is not None]
+
+    accuracy = {
+        "prequali_mae": round(sum(pre_errors) / len(pre_errors), 2) if pre_errors else None,
+        "postquali_mae": round(sum(post_errors) / len(post_errors), 2) if post_errors else None,
+        "prequali_within2_rate": round(sum(1 for e in pre_errors if e <= 2) / len(pre_errors), 3) if pre_errors else None,
+        "postquali_within2_rate": round(sum(1 for e in post_errors if e <= 2) / len(post_errors), 3) if post_errors else None,
+    }
+
+    return {
+        "driver_id": driver_id,
+        "driver_name": driver_info["driver_name"],
+        "driver_number": driver_info.get("driver_number"),
+        "constructor_id": driver_info.get("constructor_id"),
+        "constructor_name": driver_info.get("constructor_name"),
+        "position": driver_info.get("position"),
+        "points": driver_info.get("points"),
+        "sprint_points": driver_info.get("sprint_points"),
+        "race_points": driver_info.get("race_points"),
+        "wins": driver_info.get("wins", 0),
+        "podiums": driver_info.get("podiums", 0),
+        "avg_finish": round(sum(finishes) / len(finishes), 1) if finishes else None,
+        "best_finish": min(finishes) if finishes else None,
+        "dnf_count": dnf_count,
+        "rounds": rounds,
+        "accuracy": accuracy,
+    }
 
 
 def _kill_process_tree(pid: int) -> None:
