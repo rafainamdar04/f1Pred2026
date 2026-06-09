@@ -106,56 +106,6 @@ function AccuracyStrip({ accuracy, tc }) {
   );
 }
 
-function Sparkline({ rounds, tc }) {
-  if (!rounds || rounds.length === 0) return null;
-  const MAX_H = 56;
-
-  const barHeight = (r) => {
-    if (r.finish_position == null) return 4;
-    return Math.max(4, ((22 - r.finish_position) / 21) * MAX_H);
-  };
-
-  return (
-    <div style={{
-      marginTop: '16px',
-      background: '#0c0c0c', border: '1px solid rgba(255,255,255,.055)',
-      borderRadius: '3px', padding: '20px 24px',
-    }}>
-      <div style={{
-        fontSize: '9px', fontWeight: 600, letterSpacing: '2.5px',
-        textTransform: 'uppercase', color: '#444', marginBottom: '4px',
-      }}>Season performance</div>
-      <div style={{ fontSize: '10px', color: '#333', marginBottom: '16px' }}>Finish position by round · taller bar = better result</div>
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: '4px', height: `${MAX_H + 24}px` }}>
-        {rounds.map(r => {
-          const h = barHeight(r);
-          const dnf = r.finish_position == null || r.status === 'DNF' || r.status === 'DNS';
-          const isWin = r.finish_position === 1;
-          const color = dnf ? 'rgba(225,6,0,.4)' : isWin ? tc : `${tc}66`;
-          return (
-            <div key={r.round} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', justifyContent: 'flex-end' }}>
-              <div style={{
-                width: '100%', height: `${h}px`,
-                background: color,
-                borderRadius: '1px 1px 0 0',
-                transition: 'height .6s cubic-bezier(.16,1,.3,1)',
-                position: 'relative',
-              }}>
-                {isWin && (
-                  <div style={{
-                    position: 'absolute', top: '-14px', left: '50%', transform: 'translateX(-50%)',
-                    fontSize: '8px', color: tc,
-                  }}>P1</div>
-                )}
-              </div>
-              <div style={{ fontSize: '7px', color: '#333', letterSpacing: '.5px' }}>R{r.round}</div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
 
 export function DriverProfile() {
   const { driverId } = useParams();
@@ -366,9 +316,6 @@ export function DriverProfile() {
             </table>
           </div>
         </div>
-
-        {/* Season sparkline */}
-        <Sparkline rounds={profile.rounds} tc={tc} />
 
         {/* Accuracy strip */}
         <AccuracyStrip accuracy={profile.accuracy} tc={tc} />
