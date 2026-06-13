@@ -1,1 +1,1 @@
-{"round": 6, "predicted_top3": ["leclerc", "antonelli", "hamilton"], "actual_top3": ["antonelli", "hamilton", "hadjar"], "hits": 2, "p1_correct": false, "has_result": true, "has_prediction": true}
+{"round": 6, "predicted_top3": ["leclerc", "antonelli", "hamilton"], "actual_top3": ["antonelli", "hamilton", "gasly"], "hits": 2, "p1_correct": false, "has_result": true, "has_prediction": true}
