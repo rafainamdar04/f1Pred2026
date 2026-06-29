@@ -1,0 +1,1 @@
+{"round": 8, "predicted_top3": ["max_verstappen", "russell", "antonelli"], "actual_top3": ["russell", "max_verstappen", "antonelli"], "hits": 3, "p1_correct": false, "has_result": true, "has_prediction": true}
